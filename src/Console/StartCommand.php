@@ -30,6 +30,7 @@ class StartCommand extends Command
         }
 
         $master = new Master(base_path());
+        $booted = [];
 
         foreach ($configured as $name => $config) {
             if ($only !== [] && ! in_array($name, $only, true)) {
@@ -37,21 +38,33 @@ class StartCommand extends Command
             }
 
             $master->add(new Supervisor($name, $config, base_path(), $queueSize));
-
-            $balance = ($config['balance'] ?? null) === 'auto' ? 'auto' : 'static';
             $processes = max(1, (int) ($config['processes'] ?? 1));
-            $this->components->info("Booting supervisor [{$name}] with {$processes} process(es) ({$balance}).");
+            $balance = ($config['balance'] ?? null) === 'auto' ? 'auto' : 'static';
+            $booted[] = "{$name} ({$processes}p, {$balance})";
         }
 
-        $master->run(function (array $status, bool $paused) {
-            foreach ($status as $name => $workers) {
-                $running = count(array_filter($workers, fn ($w) => $w['running']));
-                $label = $paused ? 'paused' : "{$running}/".count($workers).' running';
-                $this->components->twoColumnDetail($name, $label);
+        $this->components->info('Periscope started successfully. Watching: '.implode(', ', $booted));
+
+        $previousPaused = false;
+
+        $master->run(function (array $status, bool $paused) use (&$previousPaused) {
+            if ($paused && ! $previousPaused) {
+                $this->components->warn('Periscope paused — run `periscope:continue` to resume.');
+            } elseif (! $paused && $previousPaused) {
+                $this->components->info('Periscope resumed.');
+            }
+
+            $previousPaused = $paused;
+
+            if ($this->output->isVerbose()) {
+                foreach ($status as $name => $workers) {
+                    $running = count(array_filter($workers, fn ($w) => $w['running']));
+                    $this->components->twoColumnDetail($name, "{$running}/".count($workers).' running');
+                }
             }
         });
 
-        $this->components->info('Periscope supervisors terminated.');
+        $this->components->info('Periscope stopped.');
 
         return self::SUCCESS;
     }
