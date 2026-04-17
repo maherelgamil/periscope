@@ -1,5 +1,10 @@
 # Periscope
 
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/maherelgamil/periscope.svg?style=flat-square)](https://packagist.org/packages/maherelgamil/periscope)
+[![Tests](https://img.shields.io/github/actions/workflow/status/maherelgamil/periscope/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/maherelgamil/periscope/actions/workflows/tests.yml)
+[![Total Downloads](https://img.shields.io/packagist/dt/maherelgamil/periscope.svg?style=flat-square)](https://packagist.org/packages/maherelgamil/periscope)
+[![License](https://img.shields.io/packagist/l/maherelgamil/periscope.svg?style=flat-square)](LICENSE)
+
 > See into any queue.
 
 Periscope is a universal queue monitor for Laravel — a driver-agnostic alternative to Laravel Horizon. It works with **any** queue driver: Redis, database, SQS, Beanstalkd, and more.
