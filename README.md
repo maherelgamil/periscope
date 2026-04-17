@@ -7,46 +7,49 @@
 
 > See into any queue.
 
-Periscope is a universal queue monitor for Laravel — a driver-agnostic alternative to Laravel Horizon. It works with **any** queue driver: Redis, database, SQS, Beanstalkd, and more.
+Periscope is a universal queue monitor for Laravel — a driver-agnostic alternative to Laravel Horizon. It works with **any** queue driver: Redis, database, SQS, Beanstalkd, and more, because it collects telemetry through Laravel's built-in queue events rather than reading driver-specific internals.
 
-## Why Periscope?
+![Periscope Overview](docs/screenshots/overview.png)
 
-Laravel Horizon is excellent — but Redis-only. Periscope brings the same caliber of observability to every queue driver by collecting telemetry through Laravel's built-in queue events rather than depending on driver-specific internals.
+## Contents
 
-![Overview](docs/screenshots/overview.png)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Running workers](#running-workers)
+- [Scheduling](#scheduling)
+- [Authorization](#authorization)
+- [Metrics endpoint](#metrics-endpoint-prometheus--json)
+- [Alerts](#alerts)
+- [Tags](#tags)
+- [Commands](#commands)
+- [Screenshots](#screenshots)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
 
-<details>
-<summary>More screenshots</summary>
+## Features
 
-### Jobs
-![Jobs](docs/screenshots/jobs.png)
+- **Universal** — works with `redis`, `database`, `sqs`, `beanstalkd`, and `sync` queue drivers
+- **Real-time dashboard** built on Livewire 4 + Tailwind 4 — no CDN, ships with a compiled CSS bundle
+- **Per-attempt tracking** — every retry recorded with its runtime and exception, shown as a timeline on the job detail page
+- **Grouped exceptions** — aggregate by class + message so you see "this `RuntimeException` hit 47 times" instead of 47 rows
+- **Live queue depth** via driver adapters — pending, delayed, and reserved counts on the Queues page
+- **Throughput chart** — last 60 minutes of processed vs failed jobs, polled every 10s
+- **Worker pools** — config-driven supervisors with optional auto-balance that moves processes between queues based on backlog depth
+- **Lifecycle control** — `start` / `pause` / `continue` / `terminate` for deploy-friendly operation
+- **Failed job management** — search, filter, retry, forget, and bulk actions
+- **Alerts** — failure spike, long wait, stale worker; delivered via mail, Slack, or webhook
+- **Prometheus + JSON metrics endpoint** for external monitoring stacks (Grafana, Datadog, etc.)
+- **Authorization gate** — `viewPeriscope` ability, scoped to `local` by default
+- **Rolling metrics** — per-minute buckets rolled up into hourly, with configurable retention per tier
+- **Tag filtering** via Laravel's `Queueable::tags()`
 
-### Exceptions (grouped)
-![Exceptions](docs/screenshots/exceptions.png)
+## Requirements
 
-### Failed
-![Failed](docs/screenshots/failed.png)
-
-### Workers
-![Workers](docs/screenshots/workers.png)
-
-### Queues (live driver sizes)
-![Queues](docs/screenshots/queues.png)
-
-</details>
-
-## Features (planned)
-
-- Real-time dashboard (Livewire v4 + Tailwind v4)
-- Works with all queue drivers: `database`, `redis`, `sqs`, `beanstalkd`, `sync`
-- Per-queue throughput, wait time, failure rate
-- Job inspector (payload, attempts, runtime, exception trace)
-- Failed jobs management (retry, bulk actions)
-- Worker heartbeat & stale-worker detection
-- Tag-based filtering via `Queueable::tags()`
-- Rolling metrics with configurable retention
-- Optional alerts (Slack, mail) on failure spikes or long waits
-- Authorization gate (`viewPeriscope`) for dashboard access
+- PHP 8.2+
+- Laravel 11, 12, or 13
+- Livewire 4
 
 ## Installation
 
@@ -56,36 +59,23 @@ php artisan periscope:install
 php artisan migrate
 ```
 
-Then visit `/periscope` in your browser.
+Visit `/periscope` in your browser. The dashboard is gated to `local` environment by default — see [Authorization](#authorization) to expose it elsewhere.
 
-### Scheduling
+## Running workers
 
-Add these to your app's scheduler (`routes/console.php`):
+Workers must be launched through Periscope so heartbeats show up on the Workers page.
 
-```php
-use Illuminate\Support\Facades\Schedule;
-
-Schedule::command('periscope:workers:sweep')->everyMinute();
-Schedule::command('periscope:snapshot')->hourly();
-Schedule::command('periscope:alerts:check')->everyFiveMinutes();
-Schedule::command('periscope:prune')->daily();
-```
-
-### Running workers
-
-Wrap your workers with the supervise command so Periscope can track heartbeats:
+### A single worker
 
 ```bash
-# Single worker
 php artisan periscope:supervise redis --queue=default,emails
-
-# Or run a pool defined in config/periscope.php
-php artisan periscope:start
 ```
 
-### Supervisors
+Same flags as `queue:work` (`--tries`, `--timeout`, `--memory`, `--max-jobs`, `--max-time`, etc.).
 
-Define named worker pools in `config/periscope.php`:
+### Config-driven pools (recommended)
+
+Define supervisors in `config/periscope.php`:
 
 ```php
 'supervisors' => [
@@ -105,16 +95,90 @@ Define named worker pools in `config/periscope.php`:
 ],
 ```
 
-Run `php artisan periscope:start` to boot all pools. The master process auto-restarts any child that crashes and shuts every worker down cleanly on SIGTERM/SIGINT.
+Start every pool with:
 
-### Metrics endpoint (Prometheus / JSON)
+```bash
+php artisan periscope:start
+```
 
-Periscope exposes aggregated telemetry for external monitoring:
+The master process respawns any child that crashes and shuts children down cleanly on SIGTERM / SIGINT. Run with `--supervisor=default` to start only a specific pool.
+
+### Auto-balance mode
+
+Set `balance: 'auto'` and Periscope allocates processes per queue proportional to live queue depth on each cycle, clamped between `min_processes` and `max_processes`:
+
+```php
+'default' => [
+    'connection' => 'redis',
+    'queue' => ['high', 'default', 'low'],
+    'balance' => 'auto',
+    'min_processes' => 1,
+    'max_processes' => 10,
+],
+```
+
+When all queues are empty, each queue runs `min_processes` workers. When backlog grows, processes are moved toward the busiest queues automatically.
+
+### Deploy-friendly lifecycle
+
+```bash
+# Stop spawning new workers; let running ones drain
+php artisan periscope:pause
+
+# Resume
+php artisan periscope:continue
+
+# Shut the master down entirely (use this in your deploy script)
+php artisan periscope:terminate
+```
+
+## Scheduling
+
+Add the housekeeping commands to `routes/console.php`:
+
+```php
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('periscope:workers:sweep')->everyMinute();
+Schedule::command('periscope:snapshot')->hourly();
+Schedule::command('periscope:alerts:check')->everyFiveMinutes();
+Schedule::command('periscope:prune')->daily();
+```
+
+## Authorization
+
+The dashboard is gated by the `viewPeriscope` ability. The default definition allows access only in the `local` environment; override it in a service provider:
+
+```php
+use Illuminate\Support\Facades\Gate;
+
+Gate::define('viewPeriscope', fn ($user) => $user?->is_admin === true);
+```
+
+The metrics endpoint bypasses this gate — see below.
+
+## Metrics endpoint (Prometheus / JSON)
+
+Periscope exposes aggregated telemetry at:
 
 - `/periscope/metrics` — Prometheus text format (scrape target)
 - `/periscope/metrics.json` — JSON for custom integrations
 
-Both bypass the dashboard gate by default. Protect them for production via `periscope.metrics.middleware` (IP allowlist, token guard, etc.) or disable entirely with `PERISCOPE_METRICS_ENABLED=false`.
+Both bypass the dashboard authorization by default. Protect them for production with your own middleware (IP allowlist, token guard):
+
+```php
+// config/periscope.php
+'metrics' => [
+    'enabled' => env('PERISCOPE_METRICS_ENABLED', true),
+    'middleware' => ['web', \App\Http\Middleware\AllowPrometheus::class],
+],
+```
+
+Or disable entirely:
+
+```bash
+PERISCOPE_METRICS_ENABLED=false
+```
 
 Example Prometheus scrape config:
 
@@ -126,95 +190,133 @@ scrape_configs:
       - targets: ['your-app.test']
 ```
 
-### Authorizing the dashboard
+**Exposed metrics** (each labelled with `connection` and `queue` where applicable):
 
-By default the dashboard is only accessible in `local`. Override the gate in a service provider:
+| Metric | Type | Description |
+|---|---|---|
+| `periscope_jobs_processed_total` | counter | Successfully processed jobs |
+| `periscope_jobs_failed_total` | counter | Jobs that failed |
+| `periscope_jobs_queued_total` | counter | Jobs pushed onto a queue |
+| `periscope_runtime_ms_sum` | counter | Cumulative runtime (ms) |
+| `periscope_wait_ms_sum` | counter | Cumulative wait time (ms) |
+| `periscope_queue_pending` | gauge | Jobs ready to process (live from driver) |
+| `periscope_queue_delayed` | gauge | Jobs scheduled for the future |
+| `periscope_queue_reserved` | gauge | Jobs currently claimed by a worker |
+| `periscope_workers{status}` | gauge | Worker counts by status |
+| `periscope_jobs_current{status}` | gauge | Monitored jobs by current status |
 
-```php
-Gate::define('viewPeriscope', fn ($user) => $user?->is_admin === true);
+## Alerts
+
+Three rules ship in the box:
+
+- `failure_spike` — more than N failed jobs in M minutes
+- `long_wait` — average wait exceeds a threshold
+- `stale_worker` — any worker has missed its heartbeat window
+
+Each rule has a per-rule cooldown to prevent flooding. Configure thresholds in `config/periscope.php` and wire channels with env vars:
+
+```bash
+PERISCOPE_ALERT_CHANNELS=mail,slack,webhook
+PERISCOPE_ALERT_MAIL=ops@example.com
+PERISCOPE_ALERT_SLACK_WEBHOOK=https://hooks.slack.com/services/...
+PERISCOPE_ALERT_WEBHOOK_URL=https://your-app.test/webhooks/periscope
 ```
 
-## Requirements
+Webhook payload shape:
 
-- PHP 8.2+
-- Laravel 11 / 12 / 13
-- Livewire 4
+```json
+{
+    "key": "failure_spike",
+    "title": "Queue failure spike",
+    "message": "23 job(s) failed in the last 5 minutes (threshold: 10).",
+    "severity": "error",
+    "context": {"count": 23, "minutes": 5, "threshold": 10},
+    "fired_at": "2026-04-17T20:30:00+00:00",
+    "source": "periscope"
+}
+```
 
----
+Schedule `periscope:alerts:check` every few minutes to evaluate the rules.
 
-## Roadmap / TODO
+## Tags
 
-### Phase 1 — Foundation
-- [x] Service provider, config, publishable assets
-- [x] `periscope:install` command
-- [x] Migrations: `periscope_jobs`, `periscope_metrics`, `periscope_workers`
-- [x] Models + repository layer
-- [x] `periscope:prune` command
-- [ ] Base tests + CI setup
+Any `ShouldQueue` job can expose tags by implementing a `tags()` method:
 
-### Phase 2 — Event collection
-- [x] `RecordJobLifecycle` listener (JobQueued, JobProcessing, JobProcessed, JobFailed)
-- [x] Payload storage with size limits
-- [x] Tag extraction from queueable jobs
-- [x] Runtime & wait-time calculation
-- [x] `periscope:prune` command for retention
-- [x] Queue filter config respected (per-connection allowlist)
-- [ ] `JobExceptionOccurred` / `JobRetryRequested` handling
+```php
+class SendInvoice implements ShouldQueue
+{
+    use Queueable;
 
-### Phase 3 — Driver adapters
-- [x] `DriverAdapter` contract
-- [x] `DatabaseAdapter` (jobs table queries)
-- [x] `RedisAdapter` (LLEN / ZCARD)
-- [x] `SqsAdapter` (GetQueueAttributes)
-- [x] `BeanstalkdAdapter` (stats-tube)
-- [x] `NullAdapter` fallback
-- [x] `AdapterFactory` + `QueueSize` service with per-connection adapter resolution
+    public function __construct(public Invoice $invoice) {}
 
-### Phase 4 — Workers
-- [x] `periscope:supervise` command wrapping queue workers
-- [x] Heartbeat writer (configurable interval)
-- [x] Stale-worker detection (`periscope:workers:sweep`)
-- [x] Worker metadata (hostname, pid, queues, started_at)
+    public function tags(): array
+    {
+        return ['invoices', "customer:{$this->invoice->customer_id}"];
+    }
+}
+```
 
-### Phase 5 — Dashboard (Livewire)
-- [x] Routes + authorization gate (`viewPeriscope`)
-- [x] Base layout + navigation
-- [x] Overview page (counters, avg runtime & wait)
-- [x] Jobs page (list, filter, search)
-- [x] Job detail page (payload, exception, timeline)
-- [x] Failed jobs page with retry/forget actions
-- [x] Workers page
-- [x] Queues page (live driver sizes)
-- [ ] Metrics page with charts (Phase 6)
+Tags show on the job detail page and can be filtered on the Jobs page via the Tag input.
 
-### Phase 6 — Metrics aggregation
-- [x] `periscope:snapshot` scheduled command
-- [x] Per-minute and per-hour rollups
-- [x] Throughput chart on overview page
-- [x] Configurable retention per aggregation level (`metrics_minute`, `metrics_hour`)
+## Commands
 
-### Phase 7 — Alerts
-- [x] Alert rules: failure spike, long wait, stale worker
-- [x] Slack notifier
-- [x] Mail notifier
-- [x] `periscope:alerts:check` command with cooldown
-- [ ] Webhook notifier (channel hook — users can add their own)
+| Command | Purpose |
+|---|---|
+| `periscope:install` | Publish config, migrations, and compiled assets |
+| `periscope:supervise {connection}` | Run a single `queue:work` with heartbeat reporting |
+| `periscope:start` | Boot all supervisors from config (respawns children, handles SIGTERM) |
+| `periscope:pause` | Stop spawning new workers; drain running ones |
+| `periscope:continue` | Resume after a pause |
+| `periscope:terminate` | Signal the master to shut down |
+| `periscope:workers:sweep` | Mark workers stale past their heartbeat window |
+| `periscope:snapshot` | Roll minute metrics into hourly buckets |
+| `periscope:prune` | Delete old jobs and metrics per retention config |
+| `periscope:alerts:check` | Evaluate alert rules and dispatch notifications |
 
-### Phase 8 — Polish
-- [x] Tag filtering on jobs page
-- [x] Search across jobs (name, uuid, job_id)
-- [x] Dark theme by default
-- [x] Pest feature tests (lifecycle, prune, snapshot)
-- [x] Publishable config + views + migrations
-- [ ] Browser test coverage for dashboard
-- [ ] Screenshots in README
+Run any command with `--help` for full flag reference.
 
-### Phase 9 — Release
-- [x] LICENSE
-- [x] CHANGELOG
-- [ ] Packagist release
-- [ ] Documentation site
+## Screenshots
+
+<details>
+<summary>Click to expand</summary>
+
+### Jobs
+![Jobs list with status, queue, and tag filters](docs/screenshots/jobs.png)
+
+### Exceptions — grouped by class + message
+![Exception grouping showing occurrences and affected jobs](docs/screenshots/exceptions.png)
+
+### Failed jobs — search, bulk retry / forget
+![Failed jobs page with bulk actions](docs/screenshots/failed.png)
+
+### Workers
+![Worker heartbeats with host, pid, queues, and status](docs/screenshots/workers.png)
+
+### Queues — live driver sizes
+![Live queue depth from driver adapters](docs/screenshots/queues.png)
+
+</details>
+
+## Testing
+
+```bash
+composer install
+./vendor/bin/pest
+```
+
+The suite uses Orchestra Testbench with in-memory SQLite. CI runs the full matrix of PHP 8.2 / 8.3 / 8.4 × Laravel 11 / 12 / 13 on every push.
+
+## Contributing
+
+Bug reports and pull requests are welcome. Please run `./vendor/bin/pint` and `./vendor/bin/pest` before opening a PR.
+
+Security issues: please email [maherelgamil@gmail.com](mailto:maherelgamil@gmail.com) rather than filing a public issue.
+
+## Credits
+
+- [Maher ElGamil](https://github.com/maherelgamil)
+- All contributors
 
 ## License
 
-MIT
+The MIT License (MIT). See [LICENSE](LICENSE) for the full text.
