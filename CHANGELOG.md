@@ -4,6 +4,22 @@ All notable changes to `periscope` will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-04-17
+
+### Added
+- **Per-attempt tracking** — new `periscope_job_attempts` table records every retry with its runtime and exception; job detail page shows the attempt timeline
+- **Exceptions page** — groups failures by class + message with occurrence count, affected jobs, first/last seen, and a time-window selector
+- **Metrics endpoint** — `/periscope/metrics` (Prometheus text format) and `/periscope/metrics.json` for external monitoring, with independent middleware config
+- **Auto-balance supervisor** — `balance: 'auto'` allocates processes per queue proportional to live queue depth, bounded by `min_processes` / `max_processes`
+- **Webhook alert notifier** alongside mail and Slack
+- **Failed jobs polish** — pagination, search across name/uuid/exception, queue filter, checkbox-driven bulk retry/forget
+- Dashboard HTTP smoke tests and metrics-endpoint tests in the Pest suite
+
+### Changed
+- `MonitoredJob::attempts()` relation renamed to `history()` to avoid collision with the `attempts` integer column
+- `RedisAdapter::queues()` uses `SCAN` instead of `KEYS` for non-blocking queue discovery
+- Failed-job `forget` now also removes Laravel's native `failed_jobs` record
+
 ## [0.1.0] — 2026-04-17
 
 First tagged release.
