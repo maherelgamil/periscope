@@ -85,6 +85,25 @@ Define named worker pools in `config/periscope.php`:
 
 Run `php artisan periscope:start` to boot all pools. The master process auto-restarts any child that crashes and shuts every worker down cleanly on SIGTERM/SIGINT.
 
+### Metrics endpoint (Prometheus / JSON)
+
+Periscope exposes aggregated telemetry for external monitoring:
+
+- `/periscope/metrics` — Prometheus text format (scrape target)
+- `/periscope/metrics.json` — JSON for custom integrations
+
+Both bypass the dashboard gate by default. Protect them for production via `periscope.metrics.middleware` (IP allowlist, token guard, etc.) or disable entirely with `PERISCOPE_METRICS_ENABLED=false`.
+
+Example Prometheus scrape config:
+
+```yaml
+scrape_configs:
+  - job_name: periscope
+    metrics_path: /periscope/metrics
+    static_configs:
+      - targets: ['your-app.test']
+```
+
 ### Authorizing the dashboard
 
 By default the dashboard is only accessible in `local`. Override the gate in a service provider:

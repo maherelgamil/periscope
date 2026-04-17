@@ -64,6 +64,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Metrics Endpoint
+    |--------------------------------------------------------------------------
+    |
+    | Exposes aggregated telemetry at `/metrics` (Prometheus text) and
+    | `/metrics.json` for external monitoring. Bypasses the dashboard gate
+    | by default — set your own middleware (IP allowlist, token guard) for
+    | production. Disable entirely with `enabled => false`.
+    |
+    */
+
+    'metrics' => [
+        'enabled' => env('PERISCOPE_METRICS_ENABLED', true),
+        'middleware' => ['web'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Queues Monitored
     |--------------------------------------------------------------------------
     |

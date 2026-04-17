@@ -27,6 +27,8 @@ use MaherElGamil\Periscope\Livewire\QueuesTable;
 use MaherElGamil\Periscope\Livewire\ThroughputChart;
 use MaherElGamil\Periscope\Livewire\WorkersTable;
 use MaherElGamil\Periscope\Support\AdapterFactory;
+use MaherElGamil\Periscope\Support\MetricsCollector;
+use MaherElGamil\Periscope\Support\PrometheusFormatter;
 use MaherElGamil\Periscope\Support\QueueSize;
 
 class PeriscopeServiceProvider extends ServiceProvider
@@ -38,6 +40,8 @@ class PeriscopeServiceProvider extends ServiceProvider
         $this->app->singleton(AdapterFactory::class);
         $this->app->singleton(QueueSize::class);
         $this->app->singleton(AlertManager::class);
+        $this->app->singleton(MetricsCollector::class);
+        $this->app->singleton(PrometheusFormatter::class);
     }
 
     public function boot(): void
