@@ -185,11 +185,20 @@ class Supervisor
             '--rest='.($this->config['rest'] ?? 0),
         ];
 
+        if (($nice = $this->config['nice'] ?? null) !== null && ! $this->isWindows()) {
+            array_unshift($args, 'nice', '-n', (string) $nice);
+        }
+
         $process = new Process($args, $this->basePath);
         $process->setTimeout(null);
         $process->start();
 
         return $process;
+    }
+
+    protected function isWindows(): bool
+    {
+        return str_starts_with(strtolower(PHP_OS_FAMILY), 'win');
     }
 
     protected function workerName(string $queue, int $index): string

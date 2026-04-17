@@ -101,6 +101,7 @@ Define supervisors in `config/periscope.php`:
         'connection' => 'redis',
         'queue' => ['notifications'],
         'processes' => 2,
+        'nice' => 10, // deprioritize with Unix nice (ignored on Windows)
     ],
 ],
 ```

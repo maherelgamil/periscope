@@ -174,6 +174,7 @@ return [
         //     'processes' => 2,           // total process cap (max_processes) when balance='auto'
         //     'min_processes' => 1,       // only used when balance='auto'
         //     'max_processes' => 4,       // only used when balance='auto'; defaults to processes
+        //     'nice' => null,             // Unix nice value (-20..19); ignored on Windows
         //     'tries' => 1,
         //     'timeout' => 60,
         //     'sleep' => 3,
