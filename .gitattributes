@@ -1,0 +1,12 @@
+* text=auto eol=lf
+
+# Keep dev/build files out of composer tarballs
+/.github            export-ignore
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/tests              export-ignore
+/phpunit.xml        export-ignore
+/package.json       export-ignore
+/package-lock.json  export-ignore
+/resources/css      export-ignore
+CHANGELOG.md        export-ignore
