@@ -4,6 +4,11 @@ All notable changes to `periscope` will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.2] — 2026-04-18
+
+### Added
+- `periscope:install` scaffolds `app/Providers/PeriscopeServiceProvider.php` (extending `PeriscopeApplicationServiceProvider`) and auto-registers it in `bootstrap/providers.php`. Override the `gate()` method to decide who can access the dashboard in non-local environments.
+
 ## [0.4.1] — 2026-04-18
 
 ### Changed
