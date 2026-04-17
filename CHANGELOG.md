@@ -4,6 +4,16 @@ All notable changes to `periscope` will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-04-17
+
+### Added
+- Batch detail page surfaces **Cancel**, **Retry failed**, and **Delete** actions in the header (previously only on the list)
+
+### Changed
+- **Migrations consolidated** — three alter-table migrations (`add_exception_signature`, `add_memory_usage_columns`, `add_batch_id`) folded into their parent create-table migrations while we're still pre-production. Remaining total: 6 clean create migrations.
+
+> ⚠️ Upgrade note: if you were running `0.3.0`, run `php artisan migrate:fresh` on a dev database or manually reconcile the `migrations` table before pulling. We would not have done this post-1.0.
+
 ## [0.3.0] — 2026-04-17
 
 ### Added
