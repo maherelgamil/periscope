@@ -4,6 +4,11 @@ All notable changes to `periscope` will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.3] — 2026-04-18
+
+### Added
+- `periscope:start` now streams each child worker's stdout/stderr to the master terminal, prefixed with `[supervisor/queue]`, so you see `RUNNING` / `DONE` / `FAIL` lines as jobs flow through the pool.
+
 ## [0.4.2] — 2026-04-18
 
 ### Added
