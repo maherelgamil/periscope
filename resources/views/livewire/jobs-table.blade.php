@@ -53,7 +53,10 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">No jobs match your filters.</td>
+                        <td colspan="6" class="px-4 py-10 text-center">
+                            <div class="text-slate-400">No jobs match your filters.</div>
+                            <div class="mt-1 text-xs text-slate-500">Dispatch a queued job or adjust the filters above.</div>
+                        </td>
                     </tr>
                 @endforelse
             </tbody>

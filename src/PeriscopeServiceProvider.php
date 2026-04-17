@@ -19,11 +19,17 @@ use MaherElGamil\Periscope\Console\StartCommand;
 use MaherElGamil\Periscope\Console\SuperviseCommand;
 use MaherElGamil\Periscope\Console\TerminateCommand;
 use MaherElGamil\Periscope\Listeners\RecordJobLifecycle;
+use MaherElGamil\Periscope\Listeners\RecordScheduleLifecycle;
+use MaherElGamil\Periscope\Livewire\AlertsTable;
+use MaherElGamil\Periscope\Livewire\BatchesTable;
+use MaherElGamil\Periscope\Livewire\ExceptionDetail;
 use MaherElGamil\Periscope\Livewire\ExceptionsTable;
 use MaherElGamil\Periscope\Livewire\FailedJobsTable;
 use MaherElGamil\Periscope\Livewire\JobsTable;
 use MaherElGamil\Periscope\Livewire\OverviewStats;
+use MaherElGamil\Periscope\Livewire\PerformanceTable;
 use MaherElGamil\Periscope\Livewire\QueuesTable;
+use MaherElGamil\Periscope\Livewire\SchedulesTable;
 use MaherElGamil\Periscope\Livewire\ThroughputChart;
 use MaherElGamil\Periscope\Livewire\WorkersTable;
 use MaherElGamil\Periscope\Support\AdapterFactory;
@@ -100,6 +106,11 @@ class PeriscopeServiceProvider extends ServiceProvider
         Livewire::component('periscope.queues-table', QueuesTable::class);
         Livewire::component('periscope.throughput-chart', ThroughputChart::class);
         Livewire::component('periscope.exceptions-table', ExceptionsTable::class);
+        Livewire::component('periscope.exception-detail', ExceptionDetail::class);
+        Livewire::component('periscope.alerts-table', AlertsTable::class);
+        Livewire::component('periscope.schedules-table', SchedulesTable::class);
+        Livewire::component('periscope.batches-table', BatchesTable::class);
+        Livewire::component('periscope.performance-table', PerformanceTable::class);
     }
 
     protected function registerListeners(): void
@@ -109,6 +120,7 @@ class PeriscopeServiceProvider extends ServiceProvider
         }
 
         $this->app->make(Dispatcher::class)->subscribe(RecordJobLifecycle::class);
+        $this->app->make(Dispatcher::class)->subscribe(RecordScheduleLifecycle::class);
     }
 
     protected function registerPublishing(): void

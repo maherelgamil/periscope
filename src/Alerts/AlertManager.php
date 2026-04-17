@@ -6,6 +6,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Cache;
+use MaherElGamil\Periscope\Models\AlertRecord;
 use MaherElGamil\Periscope\Notifications\Channels\WebhookChannel;
 use MaherElGamil\Periscope\Notifications\PeriscopeAlert;
 
@@ -52,6 +53,16 @@ class AlertManager
     public function dispatch(Alert $alert): void
     {
         $channels = (array) config('periscope.alerts.channels', []);
+
+        AlertRecord::query()->create([
+            'key' => $alert->key,
+            'title' => $alert->title,
+            'severity' => $alert->severity,
+            'message' => $alert->message,
+            'context' => $alert->context,
+            'channels' => $channels,
+            'fired_at' => now(),
+        ]);
 
         if ($channels === []) {
             return;

@@ -72,6 +72,7 @@ class RecordJobLifecycle
                 'status' => JobAttempt::STATUS_FAILED,
                 'finished_at' => $now,
                 'runtime_ms' => $runtimeMs,
+                'memory_peak_bytes' => memory_get_peak_usage(true),
                 'exception' => (string) $event->exception,
                 'exception_class' => $sig['class'],
                 'exception_message' => $sig['message'],
@@ -207,6 +208,7 @@ class RecordJobLifecycle
                 'status' => JobAttempt::STATUS_COMPLETED,
                 'finished_at' => $now,
                 'runtime_ms' => $runtimeMs,
+                'memory_peak_bytes' => memory_get_peak_usage(true),
             ])->save();
         });
     }
@@ -242,6 +244,7 @@ class RecordJobLifecycle
                 'status' => $status,
                 'finished_at' => $now,
                 'runtime_ms' => $runtimeMs,
+                'memory_peak_bytes' => memory_get_peak_usage(true),
             ];
 
             if ($exception !== null) {

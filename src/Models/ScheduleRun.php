@@ -4,7 +4,7 @@ namespace MaherElGamil\Periscope\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class JobAttempt extends Model
+class ScheduleRun extends Model
 {
     public const STATUS_RUNNING = 'running';
 
@@ -12,28 +12,23 @@ class JobAttempt extends Model
 
     public const STATUS_FAILED = 'failed';
 
+    public const STATUS_SKIPPED = 'skipped';
+
     protected $guarded = [];
 
     protected $casts = [
-        'attempt' => 'integer',
         'runtime_ms' => 'integer',
-        'memory_peak_bytes' => 'integer',
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
     ];
 
     public function getTable(): string
     {
-        return config('periscope.storage.table_prefix', 'periscope_').'job_attempts';
+        return config('periscope.storage.table_prefix', 'periscope_').'schedules';
     }
 
     public function getConnectionName(): ?string
     {
         return config('periscope.storage.connection') ?? parent::getConnectionName();
-    }
-
-    public function job()
-    {
-        return $this->belongsTo(MonitoredJob::class, 'job_uuid', 'uuid');
     }
 }

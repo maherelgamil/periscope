@@ -1,4 +1,4 @@
-<div wire:poll.5s class="overflow-hidden rounded-xl border border-slate-800">
+<div wire:poll.visible.5s class="overflow-hidden rounded-xl border border-slate-800">
     <table class="w-full divide-y divide-slate-800 text-left text-sm">
         <thead class="bg-slate-900/60 text-xs uppercase text-slate-400">
             <tr>

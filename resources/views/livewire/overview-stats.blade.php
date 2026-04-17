@@ -1,4 +1,4 @@
-<div wire:poll.5s class="space-y-6">
+<div wire:poll.visible.5s class="space-y-6">
     <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
         @php($totals = $this->totals)
         @foreach ([

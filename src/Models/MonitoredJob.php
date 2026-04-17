@@ -21,6 +21,7 @@ class MonitoredJob extends Model
         'attempts' => 'integer',
         'runtime_ms' => 'integer',
         'wait_ms' => 'integer',
+        'memory_peak_bytes' => 'integer',
         'queued_at' => 'datetime',
         'started_at' => 'datetime',
         'finished_at' => 'datetime',

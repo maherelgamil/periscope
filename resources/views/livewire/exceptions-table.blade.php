@@ -24,7 +24,8 @@
                 @forelse ($groups as $group)
                     <tr class="hover:bg-slate-900/40">
                         <td class="px-4 py-3">
-                            <div class="font-medium text-rose-300">{{ class_basename($group->exception_class) }}</div>
+                            <a href="{{ route('periscope.exceptions.show', ['class' => $group->exception_class, 'message' => $group->exception_message]) }}"
+                               class="font-medium text-rose-300 hover:underline">{{ class_basename($group->exception_class) }}</a>
                             <div class="mt-0.5 truncate text-xs text-slate-400" title="{{ $group->exception_message }}">
                                 {{ \Illuminate\Support\Str::limit($group->exception_message, 140) }}
                             </div>

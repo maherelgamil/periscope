@@ -1,4 +1,4 @@
-<div wire:poll.10s class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+<div wire:poll.visible.10s class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
     <div class="mb-3 flex items-center justify-between">
         <div>
             <div class="text-xs uppercase tracking-wide text-slate-400">Throughput</div>

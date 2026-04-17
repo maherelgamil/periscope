@@ -6,7 +6,16 @@
             <h1 class="text-2xl font-semibold">{{ $job->name }}</h1>
             <div class="mt-1 font-mono text-xs text-slate-500">{{ $job->uuid }}</div>
         </div>
-        @include('periscope::partials.status-badge', ['status' => $job->status])
+        <div class="flex items-center gap-3">
+            @include('periscope::partials.status-badge', ['status' => $job->status])
+            <form method="POST" action="{{ route('periscope.jobs.retry', $job->uuid) }}">
+                @csrf
+                <button type="submit"
+                    class="rounded-md bg-sky-500/20 px-3 py-1.5 text-xs font-medium text-sky-300 hover:bg-sky-500/30">
+                    {{ $job->status === 'failed' ? 'Retry' : 'Re-dispatch' }}
+                </button>
+            </form>
+        </div>
     </div>
 
     <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -16,6 +25,7 @@
             'Attempts' => $job->history,
             'Runtime' => $job->runtime_ms !== null ? number_format($job->runtime_ms).' ms' : '—',
             'Wait' => $job->wait_ms !== null ? number_format($job->wait_ms).' ms' : '—',
+            'Memory peak' => $job->memory_peak_bytes !== null ? number_format($job->memory_peak_bytes / 1024 / 1024, 2).' MB' : '—',
             'Queued at' => $job->queued_at?->toDateTimeString() ?? '—',
             'Started at' => $job->started_at?->toDateTimeString() ?? '—',
             'Finished at' => $job->finished_at?->toDateTimeString() ?? '—',

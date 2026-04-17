@@ -5,6 +5,8 @@
     'failed' => 'bg-rose-500/20 text-rose-300',
     'stopped' => 'bg-slate-700/60 text-slate-200',
     'stale' => 'bg-amber-500/20 text-amber-300',
+    'skipped' => 'bg-slate-700/60 text-slate-400',
+    'cancelled' => 'bg-slate-700/60 text-slate-400',
 ])
 <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $colors[$status] ?? 'bg-slate-700/60 text-slate-200' }}">
     {{ ucfirst($status) }}
