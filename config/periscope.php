@@ -1,5 +1,7 @@
 <?php
 
+use MaherElGamil\Periscope\Http\Middleware\Authorize;
+
 return [
 
     /*
@@ -58,7 +60,7 @@ return [
     |
     */
 
-    'middleware' => ['web', \MaherElGamil\Periscope\Http\Middleware\Authorize::class],
+    'middleware' => ['web', Authorize::class],
 
     /*
     |--------------------------------------------------------------------------

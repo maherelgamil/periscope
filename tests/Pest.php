@@ -1,3 +1,5 @@
 <?php
 
-uses(MaherElGamil\Periscope\Tests\TestCase::class)->in(__DIR__.'/Feature');
+use MaherElGamil\Periscope\Tests\TestCase;
+
+uses(TestCase::class)->in(__DIR__.'/Feature');

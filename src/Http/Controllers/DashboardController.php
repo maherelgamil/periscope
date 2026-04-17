@@ -4,8 +4,6 @@ namespace MaherElGamil\Periscope\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use MaherElGamil\Periscope\Models\MonitoredJob;
-use MaherElGamil\Periscope\Models\Worker;
 use MaherElGamil\Periscope\Repositories\JobRepository;
 
 class DashboardController extends Controller

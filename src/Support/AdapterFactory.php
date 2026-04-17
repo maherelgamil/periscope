@@ -6,8 +6,6 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Queue\Factory as QueueFactory;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Queue\BeanstalkdQueue;
-use Illuminate\Queue\DatabaseQueue;
-use Illuminate\Queue\RedisQueue;
 use Illuminate\Queue\SqsQueue;
 use MaherElGamil\Periscope\Contracts\DriverAdapter;
 use MaherElGamil\Periscope\Drivers\BeanstalkdAdapter;
