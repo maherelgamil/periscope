@@ -12,16 +12,20 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->string('job_id')->nullable()->index();
+            $table->string('batch_id')->nullable()->index();
             $table->string('name')->index();
             $table->string('connection')->index();
             $table->string('queue')->index();
             $table->string('status', 32)->index();
             $table->unsignedInteger('attempts')->default(0);
             $table->unsignedBigInteger('runtime_ms')->nullable();
+            $table->unsignedBigInteger('memory_peak_bytes')->nullable();
             $table->unsignedBigInteger('wait_ms')->nullable();
             $table->json('tags')->nullable();
             $table->longText('payload')->nullable();
             $table->longText('exception')->nullable();
+            $table->string('exception_class', 255)->nullable();
+            $table->string('exception_message', 500)->nullable();
             $table->timestamp('queued_at')->nullable()->index();
             $table->timestamp('started_at')->nullable();
             $table->timestamp('finished_at')->nullable()->index();
@@ -29,6 +33,7 @@ return new class extends Migration
 
             $table->index(['status', 'finished_at']);
             $table->index(['queue', 'status']);
+            $table->index(['exception_class', 'status']);
         });
     }
 

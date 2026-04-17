@@ -14,12 +14,16 @@ return new class extends Migration
             $table->unsignedInteger('attempt');
             $table->string('status', 32)->index();
             $table->unsignedBigInteger('runtime_ms')->nullable();
+            $table->unsignedBigInteger('memory_peak_bytes')->nullable();
             $table->longText('exception')->nullable();
+            $table->string('exception_class', 255)->nullable();
+            $table->string('exception_message', 500)->nullable();
             $table->timestamp('started_at')->nullable();
             $table->timestamp('finished_at')->nullable();
             $table->timestamps();
 
             $table->unique(['job_uuid', 'attempt']);
+            $table->index(['exception_class', 'status']);
         });
     }
 
