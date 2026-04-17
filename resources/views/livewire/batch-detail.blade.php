@@ -5,9 +5,26 @@
             $pct = $batch->total_jobs > 0 ? (int) round($done / $batch->total_jobs * 100) : 0;
             $status = $batch->cancelled_at ? 'cancelled' : ($batch->finished_at ? ($batch->failed_jobs > 0 ? 'failed' : 'completed') : 'running');
         @endphp
-        <div>
-            <h1 class="text-2xl font-semibold">{{ $batch->name ?: 'Unnamed batch' }}</h1>
-            <div class="mt-1 font-mono text-xs text-slate-500">{{ $batch->id }}</div>
+        @php($running = ! $batch->finished_at && ! $batch->cancelled_at)
+        <div class="flex items-start justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-semibold">{{ $batch->name ?: 'Unnamed batch' }}</h1>
+                <div class="mt-1 font-mono text-xs text-slate-500">{{ $batch->id }}</div>
+            </div>
+            <div class="flex items-center gap-2">
+                @if ($running)
+                    <button wire:click="cancel" wire:confirm="Cancel this batch?"
+                        class="rounded-md bg-rose-500/20 px-3 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-500/30">Cancel</button>
+                @endif
+                @if ($batch->failed_jobs > 0)
+                    <button wire:click="retryFailed"
+                        class="rounded-md bg-sky-500/20 px-3 py-1.5 text-xs font-medium text-sky-300 hover:bg-sky-500/30">Retry failed</button>
+                @endif
+                @if (! $running)
+                    <button wire:click="delete" wire:confirm="Remove this batch record?"
+                        class="rounded-md bg-slate-700/60 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-700">Delete</button>
+                @endif
+            </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
