@@ -17,7 +17,7 @@ All notable changes to `periscope` will be documented in this file.
 **Dashboard**
 - Date-range filters (`from` / `to` datetime-local inputs) on Jobs and Exceptions pages, URL-bound for shareable links
 
-**Horizon-parity**
+**Supervisors & alerts**
 - **Environment-aware supervisors** — define different supervisor sets per `app()->environment()` via `periscope.environments.{env}.supervisors`
 - **Balance smoothing** — `balance_cooldown` throttles rebalance decisions, `balance_max_shift` caps per-cycle process churn per queue
 - **Per-queue alert thresholds** — `failure_spike` and `long_wait` rules accept a `per_queue` map keyed by `connection:queue` or bare queue name
