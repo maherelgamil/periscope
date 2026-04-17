@@ -4,6 +4,30 @@ All notable changes to `periscope` will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-04-18
+
+### Added
+
+**Operations**
+- `periscope:status` CLI prints job counts, worker state, queue depth, and lifetime totals — good for SSH quickchecks
+- `/periscope/health` returns 200 OK or 503 JSON based on stale workers + failure rate; bypasses the dashboard gate
+- `periscope:forget` bulk-removes monitored jobs by `--tag`, `--name` (wildcards), `--status`, with `--dry-run`
+- `periscope:deploy [tag]` signals the master to gracefully restart all workers after a code deploy
+
+**Dashboard**
+- Date-range filters (`from` / `to` datetime-local inputs) on Jobs and Exceptions pages, URL-bound for shareable links
+
+**Horizon-parity**
+- **Environment-aware supervisors** — define different supervisor sets per `app()->environment()` via `periscope.environments.{env}.supervisors`
+- **Balance smoothing** — `balance_cooldown` throttles rebalance decisions, `balance_max_shift` caps per-cycle process churn per queue
+- **Per-queue alert thresholds** — `failure_spike` and `long_wait` rules accept a `per_queue` map keyed by `connection:queue` or bare queue name
+- **Silenced jobs** — `periscope.silenced` accepts FQCN glob patterns; matches are not recorded
+- **Per-tag metrics** — top-20 tags over the last hour, exposed on the Prometheus endpoint
+- **Unix `nice`** — per-supervisor `nice` value (−20..19), silently skipped on Windows
+
+### Fixed
+- Exceptions page date-range input now takes precedence over the hours selector when both are set
+
 ## [0.3.1] — 2026-04-17
 
 ### Added
