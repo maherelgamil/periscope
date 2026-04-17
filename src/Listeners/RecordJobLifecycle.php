@@ -14,6 +14,7 @@ use MaherElGamil\Periscope\Models\JobAttempt;
 use MaherElGamil\Periscope\Models\MonitoredJob;
 use MaherElGamil\Periscope\Repositories\JobRepository;
 use MaherElGamil\Periscope\Repositories\MetricRepository;
+use MaherElGamil\Periscope\Support\ExceptionSignature;
 use MaherElGamil\Periscope\Support\QueueFilter;
 use MaherElGamil\Periscope\Support\TagExtractor;
 use Throwable;
@@ -65,11 +66,15 @@ class RecordJobLifecycle
                 ? max(0, (int) ($now->getPreciseTimestamp(3) - $attempt->started_at->getPreciseTimestamp(3)))
                 : null;
 
+            $sig = ExceptionSignature::fromThrowable($event->exception);
+
             $attempt->fill([
                 'status' => JobAttempt::STATUS_FAILED,
                 'finished_at' => $now,
                 'runtime_ms' => $runtimeMs,
                 'exception' => (string) $event->exception,
+                'exception_class' => $sig['class'],
+                'exception_message' => $sig['message'],
             ])->save();
         });
     }
@@ -241,6 +246,9 @@ class RecordJobLifecycle
 
             if ($exception !== null) {
                 $attributes['exception'] = $exception;
+                $sig = ExceptionSignature::fromTraceString($exception);
+                $attributes['exception_class'] = $sig['class'];
+                $attributes['exception_message'] = $sig['message'];
             }
 
             if ($job) {

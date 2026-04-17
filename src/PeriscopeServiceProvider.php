@@ -19,6 +19,7 @@ use MaherElGamil\Periscope\Console\StartCommand;
 use MaherElGamil\Periscope\Console\SuperviseCommand;
 use MaherElGamil\Periscope\Console\TerminateCommand;
 use MaherElGamil\Periscope\Listeners\RecordJobLifecycle;
+use MaherElGamil\Periscope\Livewire\ExceptionsTable;
 use MaherElGamil\Periscope\Livewire\FailedJobsTable;
 use MaherElGamil\Periscope\Livewire\JobsTable;
 use MaherElGamil\Periscope\Livewire\OverviewStats;
@@ -94,6 +95,7 @@ class PeriscopeServiceProvider extends ServiceProvider
         Livewire::component('periscope.workers-table', WorkersTable::class);
         Livewire::component('periscope.queues-table', QueuesTable::class);
         Livewire::component('periscope.throughput-chart', ThroughputChart::class);
+        Livewire::component('periscope.exceptions-table', ExceptionsTable::class);
     }
 
     protected function registerListeners(): void

@@ -21,6 +21,7 @@
                         'periscope.queues' => 'Queues',
                         'periscope.jobs' => 'Jobs',
                         'periscope.failed' => 'Failed',
+                        'periscope.exceptions' => 'Exceptions',
                         'periscope.workers' => 'Workers',
                     ] as $route => $label)
                         <a href="{{ route($route) }}"

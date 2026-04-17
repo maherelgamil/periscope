@@ -41,6 +41,11 @@ class DashboardController extends Controller
         return view('periscope::workers');
     }
 
+    public function exceptions()
+    {
+        return view('periscope::exceptions');
+    }
+
     public function queues()
     {
         return view('periscope::queues');

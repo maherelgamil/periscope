@@ -8,4 +8,5 @@ Route::get('/jobs', [DashboardController::class, 'jobs'])->name('periscope.jobs'
 Route::get('/jobs/{uuid}', [DashboardController::class, 'job'])->name('periscope.jobs.show');
 Route::get('/failed', [DashboardController::class, 'failed'])->name('periscope.failed');
 Route::get('/workers', [DashboardController::class, 'workers'])->name('periscope.workers');
+Route::get('/exceptions', [DashboardController::class, 'exceptions'])->name('periscope.exceptions');
 Route::get('/queues', [DashboardController::class, 'queues'])->name('periscope.queues');
