@@ -90,6 +90,18 @@ class PrometheusFormatter
             $lines[] = $this->metric('periscope_jobs_current', $count, ['status' => $status]);
         }
 
+        $lines[] = '# HELP periscope_tag_processed_total Jobs processed in the last hour, by tag';
+        $lines[] = '# TYPE periscope_tag_processed_total counter';
+        foreach ($data['tags'] ?? [] as $row) {
+            $lines[] = $this->metric('periscope_tag_processed_total', $row['processed'], ['tag' => $row['tag']]);
+        }
+
+        $lines[] = '# HELP periscope_tag_failed_total Jobs failed in the last hour, by tag';
+        $lines[] = '# TYPE periscope_tag_failed_total counter';
+        foreach ($data['tags'] ?? [] as $row) {
+            $lines[] = $this->metric('periscope_tag_failed_total', $row['failed'], ['tag' => $row['tag']]);
+        }
+
         return implode("\n", $lines)."\n";
     }
 

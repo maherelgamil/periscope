@@ -89,6 +89,12 @@ class RecordJobLifecycle
         }
 
         $payload = $this->decodePayload($event->payload ?? null);
+        $name = $payload['displayName'] ?? $this->jobName($event->job);
+
+        if ($this->filter->isSilencedJob($name)) {
+            return;
+        }
+
         $uuid = $this->uuidFromPayload($payload) ?? (string) Str::uuid();
 
         $this->safely(function () use ($event, $queue, $payload, $uuid) {
@@ -123,6 +129,10 @@ class RecordJobLifecycle
         $queue = $event->job->getQueue() ?? 'default';
 
         if (! $this->filter->shouldRecord($event->connectionName, $queue)) {
+            return;
+        }
+
+        if ($this->filter->isSilencedJob($event->job->getName())) {
             return;
         }
 

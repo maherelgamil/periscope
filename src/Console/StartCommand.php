@@ -15,7 +15,12 @@ class StartCommand extends Command
 
     public function handle(QueueSize $queueSize): int
     {
-        $configured = (array) config('periscope.supervisors', []);
+        $env = app()->environment();
+        $envSupervisors = (array) config("periscope.environments.{$env}.supervisors", []);
+        $configured = $envSupervisors !== []
+            ? $envSupervisors
+            : (array) config('periscope.supervisors', []);
+
         $only = $this->option('supervisor');
 
         if ($configured === []) {

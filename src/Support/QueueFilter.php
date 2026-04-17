@@ -4,6 +4,22 @@ namespace MaherElGamil\Periscope\Support;
 
 class QueueFilter
 {
+    public function isSilencedJob(?string $name): bool
+    {
+        if ($name === null || $name === '') {
+            return false;
+        }
+
+        foreach ((array) config('periscope.silenced', []) as $pattern) {
+            $regex = '/^'.str_replace(['\\*', '\\?'], ['.*', '.'], preg_quote($pattern, '/')).'$/';
+            if (preg_match($regex, $name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function shouldRecord(string $connection, string $queue): bool
     {
         $configured = (array) config('periscope.queues', []);

@@ -11,6 +11,11 @@ class Supervisor
     /** @var array<string, array<int, Process>> */
     protected array $processes = [];
 
+    /** @var array<string, int> */
+    protected array $currentTargets = [];
+
+    protected ?int $lastBalanceAt = null;
+
     public function __construct(
         public readonly string $name,
         public readonly array $config,
@@ -123,9 +128,18 @@ class Supervisor
             return [$joined => $total];
         }
 
+        // Honor balance cooldown — reuse previous targets until enough time has passed.
+        $cooldown = max(0, (int) ($this->config['balance_cooldown'] ?? 3));
+        $now = time();
+
+        if ($this->currentTargets !== [] && $this->lastBalanceAt !== null && ($now - $this->lastBalanceAt) < $cooldown) {
+            return $this->currentTargets;
+        }
+
         $connection = $this->config['connection'] ?? 'redis';
         $min = max(1, (int) ($this->config['min_processes'] ?? 1));
         $max = max($min, (int) ($this->config['max_processes'] ?? $total));
+        $maxShift = max(1, (int) ($this->config['balance_max_shift'] ?? 1));
         $adapter = $this->queueSize->adapter($connection);
         $pending = [];
         $totalPending = 0;
@@ -137,29 +151,45 @@ class Supervisor
         }
 
         if ($totalPending === 0) {
-            return array_fill_keys($queues, $min);
-        }
+            $targets = array_fill_keys($queues, $min);
+        } else {
+            $targets = [];
+            $allocated = 0;
 
-        $targets = [];
-        $allocated = 0;
+            foreach ($queues as $queue) {
+                $share = (int) round(($pending[$queue] / $totalPending) * $max);
+                $targets[$queue] = max($min, min($max, $share));
+                $allocated += $targets[$queue];
+            }
 
-        foreach ($queues as $queue) {
-            $share = (int) round(($pending[$queue] / $totalPending) * $max);
-            $targets[$queue] = max($min, min($max, $share));
-            $allocated += $targets[$queue];
-        }
-
-        // Trim to max if rounding pushed us over
-        while ($allocated > $max) {
-            arsort($targets);
-            foreach ($targets as $queue => $count) {
-                if ($count > $min) {
-                    $targets[$queue]--;
-                    $allocated--;
-                    break;
+            while ($allocated > $max) {
+                arsort($targets);
+                foreach ($targets as $queue => $count) {
+                    if ($count > $min) {
+                        $targets[$queue]--;
+                        $allocated--;
+                        break;
+                    }
                 }
             }
         }
+
+        // Apply max-shift cap: limit change per queue compared to current targets.
+        if ($this->currentTargets !== []) {
+            foreach ($targets as $queue => $desired) {
+                $current = $this->currentTargets[$queue] ?? $min;
+                $delta = $desired - $current;
+
+                if ($delta > $maxShift) {
+                    $targets[$queue] = $current + $maxShift;
+                } elseif ($delta < -$maxShift) {
+                    $targets[$queue] = $current - $maxShift;
+                }
+            }
+        }
+
+        $this->currentTargets = $targets;
+        $this->lastBalanceAt = $now;
 
         return $targets;
     }

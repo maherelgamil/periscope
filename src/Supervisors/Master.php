@@ -11,6 +11,8 @@ class Master
 
     public const PAUSE_KEY = 'periscope:master:paused';
 
+    public const DEPLOY_TAG_KEY = 'periscope:deploy-tag';
+
     /** @var array<int, Supervisor> */
     protected array $supervisors = [];
 
@@ -27,10 +29,19 @@ class Master
     {
         $this->registerSignals();
         Cache::forever(self::PID_KEY, getmypid());
+        $deployTag = Cache::get(self::DEPLOY_TAG_KEY);
 
         try {
             while (! $this->shouldStop) {
                 $paused = (bool) Cache::get(self::PAUSE_KEY, false);
+                $currentTag = Cache::get(self::DEPLOY_TAG_KEY);
+
+                if ($currentTag !== $deployTag) {
+                    foreach ($this->supervisors as $supervisor) {
+                        $supervisor->terminate();
+                    }
+                    $deployTag = $currentTag;
+                }
 
                 foreach ($this->supervisors as $supervisor) {
                     if ($paused) {

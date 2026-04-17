@@ -10,6 +10,8 @@ use Livewire\Livewire;
 use MaherElGamil\Periscope\Alerts\AlertManager;
 use MaherElGamil\Periscope\Console\CheckAlertsCommand;
 use MaherElGamil\Periscope\Console\ContinueCommand;
+use MaherElGamil\Periscope\Console\DeployCommand;
+use MaherElGamil\Periscope\Console\ForgetCommand;
 use MaherElGamil\Periscope\Console\InstallCommand;
 use MaherElGamil\Periscope\Console\MarkStaleWorkersCommand;
 use MaherElGamil\Periscope\Console\PauseCommand;
@@ -172,6 +174,8 @@ class PeriscopeServiceProvider extends ServiceProvider
             PauseCommand::class,
             ContinueCommand::class,
             StatusCommand::class,
+            ForgetCommand::class,
+            DeployCommand::class,
         ]);
     }
 }

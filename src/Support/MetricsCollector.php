@@ -68,6 +68,8 @@ class MetricsCollector
             ->groupBy('status')
             ->pluck('c', 'status');
 
+        $tagCounts = $this->topTags();
+
         return [
             'jobs' => $jobs,
             'runtime' => $runtime,
@@ -83,7 +85,43 @@ class MetricsCollector
                 'completed' => (int) ($jobStatuses['completed'] ?? 0),
                 'failed' => (int) ($jobStatuses['failed'] ?? 0),
             ],
+            'tags' => $tagCounts,
         ];
+    }
+
+    /**
+     * @return array<int, array{tag: string, processed: int, failed: int}>
+     */
+    protected function topTags(int $limit = 20): array
+    {
+        $since = now()->subHour();
+
+        $rows = MonitoredJob::query()
+            ->select(['tags', 'status'])
+            ->whereNotNull('tags')
+            ->where('finished_at', '>=', $since)
+            ->limit(5000)
+            ->get();
+
+        $counts = [];
+
+        foreach ($rows as $row) {
+            $tags = $row->tags ?? [];
+            foreach ($tags as $tag) {
+                $counts[$tag] ??= ['processed' => 0, 'failed' => 0];
+                $bucket = $row->status === 'failed' ? 'failed' : 'processed';
+                $counts[$tag][$bucket]++;
+            }
+        }
+
+        uasort($counts, fn ($a, $b) => ($b['processed'] + $b['failed']) <=> ($a['processed'] + $a['failed']));
+
+        $result = [];
+        foreach (array_slice($counts, 0, $limit, true) as $tag => $data) {
+            $result[] = ['tag' => $tag, 'processed' => $data['processed'], 'failed' => $data['failed']];
+        }
+
+        return $result;
     }
 
     protected function configuredQueues(): array

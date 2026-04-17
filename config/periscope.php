@@ -174,6 +174,8 @@ return [
         //     'processes' => 2,           // total process cap (max_processes) when balance='auto'
         //     'min_processes' => 1,       // only used when balance='auto'
         //     'max_processes' => 4,       // only used when balance='auto'; defaults to processes
+        //     'balance_cooldown' => 3,    // seconds between rebalance decisions
+        //     'balance_max_shift' => 1,   // max processes added/removed per queue per cycle
         //     'nice' => null,             // Unix nice value (-20..19); ignored on Windows
         //     'tries' => 1,
         //     'timeout' => 60,
@@ -183,6 +185,44 @@ return [
         //     'max_jobs' => 0,
         //     'max_time' => 0,
         // ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Environment Overrides
+    |--------------------------------------------------------------------------
+    |
+    | Define env-specific supervisors. When `app()->environment()` matches a
+    | key here, those supervisors replace the top-level `supervisors` array.
+    |
+    */
+
+    'environments' => [
+        // 'production' => [
+        //     'supervisors' => [
+        //         'default' => [
+        //             'connection' => 'redis',
+        //             'queue' => ['default'],
+        //             'processes' => 10,
+        //         ],
+        //     ],
+        // ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Silenced Jobs
+    |--------------------------------------------------------------------------
+    |
+    | Fully-qualified class names (wildcards allowed) that Periscope should
+    | skip recording. Useful for high-volume internal jobs you don't want
+    | in the dashboard.
+    |
+    */
+
+    'silenced' => [
+        // 'Laravel\\Telescope\\Jobs\\*',
+        // 'App\\Jobs\\HealthCheckJob',
     ],
 
     /*
@@ -211,12 +251,20 @@ return [
                 'threshold' => 10,
                 'minutes' => 5,
                 'cooldown_minutes' => 15,
+                // 'per_queue' => [
+                //     'redis:payments' => ['threshold' => 3],
+                //     'emails' => ['threshold' => 25],
+                // ],
             ],
             'long_wait' => [
                 'enabled' => true,
                 'threshold_ms' => 30_000,
                 'minutes' => 5,
                 'cooldown_minutes' => 15,
+                // 'per_queue' => [
+                //     'redis:payments' => ['threshold_ms' => 5_000],
+                //     'emails' => ['threshold_ms' => 120_000],
+                // ],
             ],
             'stale_worker' => [
                 'enabled' => true,
