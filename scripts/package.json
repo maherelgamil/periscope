@@ -1,0 +1,9 @@
+{
+  "name": "periscope-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Local-only utilities for capturing the README demo GIF.",
+  "dependencies": {
+    "playwright": "^1.47.0"
+  }
+}

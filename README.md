@@ -9,6 +9,8 @@
 
 Periscope is a universal queue monitor for Laravel — a driver-agnostic alternative to Laravel Horizon. It works with **any** queue driver: Redis, database, SQS, Beanstalkd, and more, because it collects telemetry through Laravel's built-in queue events rather than reading driver-specific internals.
 
+![Periscope dashboard walkthrough](docs/screenshots/demo.gif)
+
 ![Periscope Overview](docs/screenshots/overview.png)
 
 ## Contents
