@@ -158,15 +158,20 @@ Schedule::command('periscope:prune')->daily();
 
 ## Authorization
 
-The dashboard is gated by the `viewPeriscope` ability. The default definition allows access only in the `local` environment; override it in a service provider:
+Running `periscope:install` scaffolds `app/Providers/PeriscopeServiceProvider.php` in your application (and registers it in `bootstrap/providers.php`). Edit the `gate()` method to decide who can access the dashboard in non-local environments:
 
 ```php
-use Illuminate\Support\Facades\Gate;
-
-Gate::define('viewPeriscope', fn ($user) => $user?->is_admin === true);
+protected function gate(): void
+{
+    Gate::define('viewPeriscope', function ($user) {
+        return in_array($user?->email, [
+            'you@example.com',
+        ]);
+    });
+}
 ```
 
-The metrics endpoint bypasses this gate — see below.
+If you don't override it, access is restricted to the `local` environment. The metrics and health endpoints bypass this gate — see below.
 
 ## Metrics endpoint (Prometheus / JSON)
 

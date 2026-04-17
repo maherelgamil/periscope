@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\Facades\Gate;
+use MaherElGamil\Periscope\PeriscopeApplicationServiceProvider;
+
+class PeriscopeServiceProvider extends PeriscopeApplicationServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        parent::register();
+
+        // Register any Periscope services that need to be bound early.
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        parent::boot();
+    }
+
+    /**
+     * Register the Periscope gate.
+     *
+     * This gate determines who can access Periscope in non-local environments.
+     */
+    protected function gate(): void
+    {
+        Gate::define('viewPeriscope', function ($user = null) {
+            return in_array(optional($user)->email, [
+                //
+            ]);
+        });
+    }
+}
