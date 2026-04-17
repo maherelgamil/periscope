@@ -13,6 +13,28 @@ Periscope is a universal queue monitor for Laravel — a driver-agnostic alterna
 
 Laravel Horizon is excellent — but Redis-only. Periscope brings the same caliber of observability to every queue driver by collecting telemetry through Laravel's built-in queue events rather than depending on driver-specific internals.
 
+![Overview](docs/screenshots/overview.png)
+
+<details>
+<summary>More screenshots</summary>
+
+### Jobs
+![Jobs](docs/screenshots/jobs.png)
+
+### Exceptions (grouped)
+![Exceptions](docs/screenshots/exceptions.png)
+
+### Failed
+![Failed](docs/screenshots/failed.png)
+
+### Workers
+![Workers](docs/screenshots/workers.png)
+
+### Queues (live driver sizes)
+![Queues](docs/screenshots/queues.png)
+
+</details>
+
 ## Features (planned)
 
 - Real-time dashboard (Livewire v4 + Tailwind v4)

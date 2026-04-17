@@ -13,7 +13,7 @@
         @foreach ([
             'Connection' => $job->connection,
             'Queue' => $job->queue,
-            'Attempts' => $job->attempts,
+            'Attempts' => $job->history,
             'Runtime' => $job->runtime_ms !== null ? number_format($job->runtime_ms).' ms' : '—',
             'Wait' => $job->wait_ms !== null ? number_format($job->wait_ms).' ms' : '—',
             'Queued at' => $job->queued_at?->toDateTimeString() ?? '—',
@@ -38,7 +38,7 @@
         </div>
     @endif
 
-    @if ($job->attempts->isNotEmpty())
+    @if ($job->history->isNotEmpty())
         <div class="mt-6">
             <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">Attempts</h2>
             <div class="overflow-hidden rounded-xl border border-slate-800">
@@ -54,7 +54,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-800/50">
-                        @foreach ($job->attempts as $attempt)
+                        @foreach ($job->history as $attempt)
                             <tr>
                                 <td class="px-4 py-2 font-medium text-white">{{ $attempt->attempt }}</td>
                                 <td class="px-4 py-2">@include('periscope::partials.status-badge', ['status' => $attempt->status])</td>

@@ -4,7 +4,9 @@ namespace MaherElGamil\Periscope\Alerts;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Notifications\AnonymousNotifiable;
+use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Cache;
+use MaherElGamil\Periscope\Notifications\Channels\WebhookChannel;
 use MaherElGamil\Periscope\Notifications\PeriscopeAlert;
 
 class AlertManager
@@ -55,13 +57,24 @@ class AlertManager
             return;
         }
 
+        $this->registerWebhookChannel();
+
         $notifiable = new AnonymousNotifiable;
 
         foreach ((array) config('periscope.alerts.routes', []) as $channel => $route) {
-            $notifiable->route($channel, $route);
+            if ($route) {
+                $notifiable->route($channel, $route);
+            }
         }
 
         $notifiable->notify(new PeriscopeAlert($alert));
+    }
+
+    protected function registerWebhookChannel(): void
+    {
+        $manager = $this->app->make(ChannelManager::class);
+
+        $manager->extend('webhook', fn () => $this->app->make(WebhookChannel::class));
     }
 
     protected function shouldFire(Alert $alert, int $cooldownMinutes): bool

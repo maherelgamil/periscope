@@ -47,6 +47,13 @@ class PeriscopeAlert extends Notification
             'message' => $this->alert->message,
             'severity' => $this->alert->severity,
             'context' => $this->alert->context,
+            'fired_at' => now()->toIso8601String(),
+            'source' => 'periscope',
         ];
+    }
+
+    public function toWebhook(mixed $notifiable): array
+    {
+        return $this->toArray($notifiable);
     }
 }

@@ -151,7 +151,10 @@ return [
         // 'default' => [
         //     'connection' => 'redis',
         //     'queue' => ['default'],
-        //     'processes' => 2,
+        //     'balance' => null,          // or 'auto' for depth-proportional allocation
+        //     'processes' => 2,           // total process cap (max_processes) when balance='auto'
+        //     'min_processes' => 1,       // only used when balance='auto'
+        //     'max_processes' => 4,       // only used when balance='auto'; defaults to processes
         //     'tries' => 1,
         //     'timeout' => 60,
         //     'sleep' => 3,
@@ -179,6 +182,7 @@ return [
         'routes' => [
             'mail' => env('PERISCOPE_ALERT_MAIL'),
             'slack' => env('PERISCOPE_ALERT_SLACK_WEBHOOK'),
+            'webhook' => env('PERISCOPE_ALERT_WEBHOOK_URL'),
         ],
 
         'rules' => [

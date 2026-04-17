@@ -5,6 +5,7 @@ namespace MaherElGamil\Periscope\Console;
 use Illuminate\Console\Command;
 use MaherElGamil\Periscope\Supervisors\Master;
 use MaherElGamil\Periscope\Supervisors\Supervisor;
+use MaherElGamil\Periscope\Support\QueueSize;
 
 class StartCommand extends Command
 {
@@ -12,7 +13,7 @@ class StartCommand extends Command
 
     protected $description = 'Start all configured Periscope supervisors and keep them alive';
 
-    public function handle(): int
+    public function handle(QueueSize $queueSize): int
     {
         $configured = (array) config('periscope.supervisors', []);
         $only = $this->option('supervisor');
@@ -30,10 +31,11 @@ class StartCommand extends Command
                 continue;
             }
 
-            $master->add(new Supervisor($name, $config, base_path()));
+            $master->add(new Supervisor($name, $config, base_path(), $queueSize));
 
+            $balance = ($config['balance'] ?? null) === 'auto' ? 'auto' : 'static';
             $processes = max(1, (int) ($config['processes'] ?? 1));
-            $this->components->info("Booting supervisor [{$name}] with {$processes} process(es).");
+            $this->components->info("Booting supervisor [{$name}] with {$processes} process(es) ({$balance}).");
         }
 
         $master->run(function (array $status, bool $paused) {

@@ -36,7 +36,7 @@ class MonitoredJob extends Model
         return config('periscope.storage.connection') ?? parent::getConnectionName();
     }
 
-    public function attempts()
+    public function history()
     {
         return $this->hasMany(JobAttempt::class, 'job_uuid', 'uuid')->orderBy('attempt');
     }
