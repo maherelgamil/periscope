@@ -2,12 +2,20 @@
 
 namespace MaherElGamil\Periscope\Supervisors;
 
+use Closure;
 use MaherElGamil\Periscope\Support\QueueSize;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 
 class Supervisor
 {
+    protected ?Closure $outputHandler = null;
+
+    public function forwardOutput(?Closure $handler): void
+    {
+        $this->outputHandler = $handler;
+    }
+
     /** @var array<string, array<int, Process>> */
     protected array $processes = [];
 
@@ -224,6 +232,32 @@ class Supervisor
         $process->start();
 
         return $process;
+    }
+
+    /**
+     * Drain stdout/stderr from each running child and forward through the output handler.
+     */
+    public function drainOutput(): void
+    {
+        if ($this->outputHandler === null) {
+            return;
+        }
+
+        foreach ($this->processes as $queue => $processes) {
+            foreach ($processes as $process) {
+                if (! $process->isStarted()) {
+                    continue;
+                }
+
+                if (($out = $process->getIncrementalOutput()) !== '') {
+                    ($this->outputHandler)($this->name, $queue, 'out', $out);
+                }
+
+                if (($err = $process->getIncrementalErrorOutput()) !== '') {
+                    ($this->outputHandler)($this->name, $queue, 'err', $err);
+                }
+            }
+        }
     }
 
     protected function isWindows(): bool

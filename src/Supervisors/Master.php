@@ -56,6 +56,10 @@ class Master
                 for ($i = 0; $i < 20 && ! $this->shouldStop; $i++) {
                     usleep(100_000);
                     $this->dispatchPendingSignals();
+
+                    foreach ($this->supervisors as $supervisor) {
+                        $supervisor->drainOutput();
+                    }
                 }
             }
 

@@ -32,12 +32,26 @@ class StartCommand extends Command
         $master = new Master(base_path());
         $booted = [];
 
+        $forwarder = function (string $supervisor, string $queue, string $type, string $buffer) {
+            foreach (preg_split("/\r?\n/", rtrim($buffer, "\r\n")) as $line) {
+                if ($line === '') {
+                    continue;
+                }
+
+                $prefix = sprintf('<fg=gray>[%s/%s]</>', $supervisor, $queue);
+                $this->output->writeln($prefix.' '.$line);
+            }
+        };
+
         foreach ($configured as $name => $config) {
             if ($only !== [] && ! in_array($name, $only, true)) {
                 continue;
             }
 
-            $master->add(new Supervisor($name, $config, base_path(), $queueSize));
+            $supervisor = new Supervisor($name, $config, base_path(), $queueSize);
+            $supervisor->forwardOutput($forwarder);
+            $master->add($supervisor);
+
             $processes = max(1, (int) ($config['processes'] ?? 1));
             $balance = ($config['balance'] ?? null) === 'auto' ? 'auto' : 'static';
             $booted[] = "{$name} ({$processes}p, {$balance})";
