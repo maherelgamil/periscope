@@ -4,6 +4,11 @@ All notable changes to `periscope` will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.1] — 2026-04-18
+
+### Changed
+- `periscope:start` output is now quiet by default — prints a single boot line listing each supervisor, then stays silent until shutdown or a pause/continue state change. Pass `-v` for the previous per-tick status dump.
+
 ## [0.4.0] — 2026-04-18
 
 ### Added
