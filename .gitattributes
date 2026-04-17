@@ -10,4 +10,5 @@
 /package-lock.json  export-ignore
 /resources/css      export-ignore
 /scripts            export-ignore
+AGENTS.md           export-ignore
 CHANGELOG.md        export-ignore
