@@ -23,6 +23,12 @@ class JobsTable extends Component
     #[Url(as: 'tag')]
     public string $tag = '';
 
+    #[Url(as: 'from')]
+    public string $from = '';
+
+    #[Url(as: 'to')]
+    public string $to = '';
+
     public function updating(): void
     {
         $this->resetPage();
@@ -42,6 +48,14 @@ class JobsTable extends Component
 
         if ($this->tag !== '') {
             $query->where('tags', 'like', '%"'.$this->tag.'"%');
+        }
+
+        if ($this->from !== '') {
+            $query->where('queued_at', '>=', $this->from);
+        }
+
+        if ($this->to !== '') {
+            $query->where('queued_at', '<=', $this->to);
         }
 
         if ($this->search !== '') {

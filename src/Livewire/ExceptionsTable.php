@@ -12,14 +12,30 @@ class ExceptionsTable extends Component
     #[Url(as: 'hours')]
     public int $hours = 24;
 
+    #[Url(as: 'from')]
+    public string $from = '';
+
+    #[Url(as: 'to')]
+    public string $to = '';
+
     public function render()
     {
-        $since = now()->subHours(max(1, $this->hours));
-
-        $groups = JobAttempt::query()
+        $query = JobAttempt::query()
             ->where('status', JobAttempt::STATUS_FAILED)
-            ->whereNotNull('exception_class')
-            ->where('finished_at', '>=', $since)
+            ->whereNotNull('exception_class');
+
+        if ($this->from !== '' || $this->to !== '') {
+            if ($this->from !== '') {
+                $query->where('finished_at', '>=', $this->from);
+            }
+            if ($this->to !== '') {
+                $query->where('finished_at', '<=', $this->to);
+            }
+        } else {
+            $query->where('finished_at', '>=', now()->subHours(max(1, $this->hours)));
+        }
+
+        $groups = $query
             ->select([
                 'exception_class',
                 'exception_message',

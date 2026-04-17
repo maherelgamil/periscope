@@ -20,6 +20,11 @@
 
         <input type="text" wire:model.live.debounce.300ms="tag" placeholder="Tag"
                class="w-40 rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm placeholder-slate-500 focus:border-sky-500 focus:outline-none">
+
+        <input type="datetime-local" wire:model.live="from" title="Queued on or after"
+               class="rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm focus:border-sky-500 focus:outline-none">
+        <input type="datetime-local" wire:model.live="to" title="Queued on or before"
+               class="rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm focus:border-sky-500 focus:outline-none">
     </div>
 
     <div class="overflow-hidden rounded-xl border border-slate-800">

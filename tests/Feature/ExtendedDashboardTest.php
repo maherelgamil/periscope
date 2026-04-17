@@ -5,6 +5,7 @@ use MaherElGamil\Periscope\Models\AlertRecord;
 use MaherElGamil\Periscope\Models\JobAttempt;
 use MaherElGamil\Periscope\Models\MonitoredJob;
 use MaherElGamil\Periscope\Models\ScheduleRun;
+use MaherElGamil\Periscope\Models\Worker;
 
 it('renders the alerts page with records', function () {
     AlertRecord::query()->create([
@@ -85,6 +86,28 @@ it('renders the exceptions drill-down page', function () {
 
 it('returns 404 for the exception drill-down without a class', function () {
     $this->get('/periscope/exceptions/show')->assertNotFound();
+});
+
+it('reports healthy when there are no stale workers or failures', function () {
+    $this->getJson('/periscope/health')
+        ->assertOk()
+        ->assertJsonPath('status', 'ok')
+        ->assertJsonPath('checks.stale_workers.ok', true);
+});
+
+it('reports unhealthy when stale workers exceed the threshold', function () {
+    Worker::query()->create([
+        'name' => 'bad', 'status' => 'stale', 'last_heartbeat_at' => now()->subHour(),
+    ]);
+
+    $this->getJson('/periscope/health')
+        ->assertStatus(503)
+        ->assertJsonPath('status', 'unhealthy')
+        ->assertJsonPath('checks.stale_workers.ok', false);
+});
+
+it('runs the periscope:status command', function () {
+    $this->artisan('periscope:status')->assertSuccessful();
 });
 
 it('re-dispatches a completed job from the detail page', function () {

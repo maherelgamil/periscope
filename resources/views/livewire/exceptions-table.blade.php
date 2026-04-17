@@ -1,12 +1,24 @@
 <div class="space-y-4">
-    <div class="flex items-center gap-2 text-sm">
+    <div class="flex flex-wrap items-center gap-2 text-sm">
         <label class="text-slate-400">Window</label>
-        <select wire:model.live="hours" class="rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5">
+        <select wire:model.live="hours" class="rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5"
+                @if($from || $to) disabled @endif>
             <option value="1">Last hour</option>
             <option value="6">Last 6 hours</option>
             <option value="24">Last 24 hours</option>
             <option value="168">Last 7 days</option>
         </select>
+
+        <span class="text-slate-500">or</span>
+
+        <input type="datetime-local" wire:model.live="from" title="From"
+               class="rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5">
+        <input type="datetime-local" wire:model.live="to" title="To"
+               class="rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5">
+
+        @if($from || $to)
+            <button wire:click="$set('from','')" class="text-xs text-slate-400 hover:text-sky-300">clear</button>
+        @endif
     </div>
 
     <div class="overflow-hidden rounded-xl border border-slate-800">

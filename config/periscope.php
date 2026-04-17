@@ -81,6 +81,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Health Endpoint
+    |--------------------------------------------------------------------------
+    |
+    | Exposes `/health` returning 200 when the queue is healthy and 503 when
+    | a threshold is crossed. Bypasses the dashboard gate by default so load
+    | balancers can scrape it directly.
+    |
+    */
+
+    'health' => [
+        'enabled' => env('PERISCOPE_HEALTH_ENABLED', true),
+        'middleware' => ['web'],
+        'max_stale_workers' => env('PERISCOPE_HEALTH_MAX_STALE', 0),
+        'max_failure_rate' => env('PERISCOPE_HEALTH_MAX_FAILURE_RATE', 0.25),
+        'failure_window_minutes' => env('PERISCOPE_HEALTH_WINDOW_MINUTES', 5),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Queues Monitored
     |--------------------------------------------------------------------------
     |

@@ -16,6 +16,7 @@ use MaherElGamil\Periscope\Console\PauseCommand;
 use MaherElGamil\Periscope\Console\PruneCommand;
 use MaherElGamil\Periscope\Console\SnapshotCommand;
 use MaherElGamil\Periscope\Console\StartCommand;
+use MaherElGamil\Periscope\Console\StatusCommand;
 use MaherElGamil\Periscope\Console\SuperviseCommand;
 use MaherElGamil\Periscope\Console\TerminateCommand;
 use MaherElGamil\Periscope\Listeners\RecordJobLifecycle;
@@ -170,6 +171,7 @@ class PeriscopeServiceProvider extends ServiceProvider
             TerminateCommand::class,
             PauseCommand::class,
             ContinueCommand::class,
+            StatusCommand::class,
         ]);
     }
 }

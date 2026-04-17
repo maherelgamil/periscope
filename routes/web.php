@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use MaherElGamil\Periscope\Http\Controllers\DashboardController;
+use MaherElGamil\Periscope\Http\Controllers\HealthController;
 use MaherElGamil\Periscope\Http\Controllers\MetricsController;
 
 Route::get('/', [DashboardController::class, 'overview'])->name('periscope.overview');
@@ -25,5 +26,12 @@ if (config('periscope.metrics.enabled', true)) {
             Route::get('/metrics', [MetricsController::class, 'prometheus'])->name('periscope.metrics');
             Route::get('/metrics.json', [MetricsController::class, 'json'])->name('periscope.metrics.json');
         });
+}
+
+if (config('periscope.health.enabled', true)) {
+    Route::withoutMiddleware(config('periscope.middleware', []))
+        ->middleware(config('periscope.health.middleware', ['web']))
+        ->get('/health', HealthController::class)
+        ->name('periscope.health');
 }
 Route::get('/queues', [DashboardController::class, 'queues'])->name('periscope.queues');
