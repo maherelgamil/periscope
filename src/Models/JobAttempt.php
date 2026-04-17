@@ -4,10 +4,8 @@ namespace MaherElGamil\Periscope\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class MonitoredJob extends Model
+class JobAttempt extends Model
 {
-    public const STATUS_QUEUED = 'queued';
-
     public const STATUS_RUNNING = 'running';
 
     public const STATUS_COMPLETED = 'completed';
@@ -17,18 +15,15 @@ class MonitoredJob extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'tags' => 'array',
-        'attempts' => 'integer',
+        'attempt' => 'integer',
         'runtime_ms' => 'integer',
-        'wait_ms' => 'integer',
-        'queued_at' => 'datetime',
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
     ];
 
     public function getTable(): string
     {
-        return config('periscope.storage.table_prefix', 'periscope_').'jobs';
+        return config('periscope.storage.table_prefix', 'periscope_').'job_attempts';
     }
 
     public function getConnectionName(): ?string
@@ -36,8 +31,8 @@ class MonitoredJob extends Model
         return config('periscope.storage.connection') ?? parent::getConnectionName();
     }
 
-    public function attempts()
+    public function job()
     {
-        return $this->hasMany(JobAttempt::class, 'job_uuid', 'uuid')->orderBy('attempt');
+        return $this->belongsTo(MonitoredJob::class, 'job_uuid', 'uuid');
     }
 }

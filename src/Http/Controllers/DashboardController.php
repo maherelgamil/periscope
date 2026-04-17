@@ -26,6 +26,8 @@ class DashboardController extends Controller
 
         abort_if($job === null, 404);
 
+        $job->load('attempts');
+
         return view('periscope::job', ['job' => $job]);
     }
 

@@ -3,12 +3,14 @@
 namespace MaherElGamil\Periscope\Listeners;
 
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
+use MaherElGamil\Periscope\Models\JobAttempt;
 use MaherElGamil\Periscope\Models\MonitoredJob;
 use MaherElGamil\Periscope\Repositories\JobRepository;
 use MaherElGamil\Periscope\Repositories\MetricRepository;
@@ -31,6 +33,45 @@ class RecordJobLifecycle
         $events->listen(JobProcessing::class, [self::class, 'handleProcessing']);
         $events->listen(JobProcessed::class, [self::class, 'handleProcessed']);
         $events->listen(JobFailed::class, [self::class, 'handleFailed']);
+        $events->listen(JobExceptionOccurred::class, [self::class, 'handleException']);
+    }
+
+    public function handleException(JobExceptionOccurred $event): void
+    {
+        $queue = $event->job->getQueue() ?? 'default';
+
+        if (! $this->filter->shouldRecord($event->connectionName, $queue)) {
+            return;
+        }
+
+        $uuid = $event->job->uuid();
+
+        if ($uuid === null) {
+            return;
+        }
+
+        $this->safely(function () use ($event, $uuid) {
+            $attempt = JobAttempt::query()
+                ->where('job_uuid', $uuid)
+                ->where('attempt', $event->job->attempts())
+                ->first();
+
+            if ($attempt === null) {
+                return;
+            }
+
+            $now = Date::now();
+            $runtimeMs = $attempt->started_at
+                ? max(0, (int) ($now->getPreciseTimestamp(3) - $attempt->started_at->getPreciseTimestamp(3)))
+                : null;
+
+            $attempt->fill([
+                'status' => JobAttempt::STATUS_FAILED,
+                'finished_at' => $now,
+                'runtime_ms' => $runtimeMs,
+                'exception' => (string) $event->exception,
+            ])->save();
+        });
     }
 
     public function handleQueued(JobQueued $event): void
@@ -119,11 +160,50 @@ class RecordJobLifecycle
                 'started_at' => $now,
             ]);
         });
+
+        $this->safely(function () use ($event, $uuid) {
+            JobAttempt::query()->updateOrCreate(
+                ['job_uuid' => $uuid, 'attempt' => $event->job->attempts()],
+                [
+                    'status' => JobAttempt::STATUS_RUNNING,
+                    'started_at' => Date::now(),
+                ]
+            );
+        });
     }
 
     public function handleProcessed(JobProcessed $event): void
     {
-        $this->finalize($event->connectionName, $event->job->getQueue() ?? 'default', $event->job->uuid(), MonitoredJob::STATUS_COMPLETED);
+        $queue = $event->job->getQueue() ?? 'default';
+        $uuid = $event->job->uuid();
+
+        $this->finalize($event->connectionName, $queue, $uuid, MonitoredJob::STATUS_COMPLETED);
+
+        if ($uuid === null) {
+            return;
+        }
+
+        $this->safely(function () use ($event, $uuid) {
+            $attempt = JobAttempt::query()
+                ->where('job_uuid', $uuid)
+                ->where('attempt', $event->job->attempts())
+                ->first();
+
+            if ($attempt === null) {
+                return;
+            }
+
+            $now = Date::now();
+            $runtimeMs = $attempt->started_at
+                ? max(0, (int) ($now->getPreciseTimestamp(3) - $attempt->started_at->getPreciseTimestamp(3)))
+                : null;
+
+            $attempt->fill([
+                'status' => JobAttempt::STATUS_COMPLETED,
+                'finished_at' => $now,
+                'runtime_ms' => $runtimeMs,
+            ])->save();
+        });
     }
 
     public function handleFailed(JobFailed $event): void

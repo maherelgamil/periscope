@@ -38,6 +38,44 @@
         </div>
     @endif
 
+    @if ($job->attempts->isNotEmpty())
+        <div class="mt-6">
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">Attempts</h2>
+            <div class="overflow-hidden rounded-xl border border-slate-800">
+                <table class="w-full divide-y divide-slate-800 text-left text-sm">
+                    <thead class="bg-slate-900/60 text-xs uppercase text-slate-400">
+                        <tr>
+                            <th class="px-4 py-2">#</th>
+                            <th class="px-4 py-2">Status</th>
+                            <th class="px-4 py-2">Started</th>
+                            <th class="px-4 py-2">Finished</th>
+                            <th class="px-4 py-2">Runtime</th>
+                            <th class="px-4 py-2">Exception</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/50">
+                        @foreach ($job->attempts as $attempt)
+                            <tr>
+                                <td class="px-4 py-2 font-medium text-white">{{ $attempt->attempt }}</td>
+                                <td class="px-4 py-2">@include('periscope::partials.status-badge', ['status' => $attempt->status])</td>
+                                <td class="px-4 py-2 text-slate-400">{{ $attempt->started_at?->toDateTimeString() ?? '—' }}</td>
+                                <td class="px-4 py-2 text-slate-400">{{ $attempt->finished_at?->toDateTimeString() ?? '—' }}</td>
+                                <td class="px-4 py-2 text-slate-300">{{ $attempt->runtime_ms !== null ? number_format($attempt->runtime_ms).' ms' : '—' }}</td>
+                                <td class="px-4 py-2 text-slate-400">
+                                    @if ($attempt->exception)
+                                        <span class="font-mono text-xs text-rose-300">{{ \Illuminate\Support\Str::limit(strtok($attempt->exception, "\n"), 60) }}</span>
+                                    @else
+                                        —
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
     @if ($job->exception)
         <div class="mt-6">
             <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-rose-300">Exception</h2>
