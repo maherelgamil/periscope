@@ -96,6 +96,7 @@ class RecordJobLifecycle
                 ['uuid' => $uuid],
                 [
                     'job_id' => $this->stringOrNull($event->id),
+                    'batch_id' => $payload['data']['batchId'] ?? null,
                     'name' => $payload['displayName'] ?? $this->jobName($event->job) ?? 'unknown',
                     'connection' => $event->connectionName,
                     'queue' => $queue,
@@ -156,6 +157,7 @@ class RecordJobLifecycle
             MonitoredJob::query()->create([
                 'uuid' => $uuid,
                 'job_id' => $this->stringOrNull($event->job->getJobId()),
+                'batch_id' => $payload['data']['batchId'] ?? null,
                 'name' => $payload['displayName'] ?? $event->job->getName(),
                 'connection' => $event->connectionName,
                 'queue' => $queue,

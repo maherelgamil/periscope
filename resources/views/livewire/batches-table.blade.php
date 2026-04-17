@@ -1,4 +1,4 @@
-<div class="space-y-4">
+<div wire:poll.visible.5s class="space-y-4">
     @if (! $exists)
         <div class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
             Laravel's <code class="rounded bg-slate-800 px-1">job_batches</code> table does not exist. Run
@@ -27,29 +27,38 @@
                         $done = $batch->total_jobs - $batch->pending_jobs;
                         $pct = $batch->total_jobs > 0 ? (int) round($done / $batch->total_jobs * 100) : 0;
                         $status = $batch->cancelled_at ? 'cancelled' : ($batch->finished_at ? ($batch->failed_jobs > 0 ? 'failed' : 'completed') : 'running');
+                        $running = ! $batch->finished_at && ! $batch->cancelled_at;
                     @endphp
                     <tr class="hover:bg-slate-900/40">
                         <td class="px-4 py-2">
-                            <div class="font-medium text-white">{{ $batch->name ?: 'Unnamed batch' }}</div>
+                            <a href="{{ route('periscope.batches.show', $batch->id) }}" class="font-medium text-sky-300 hover:underline">
+                                {{ $batch->name ?: 'Unnamed batch' }}
+                            </a>
                             <div class="font-mono text-[11px] text-slate-500">{{ $batch->id }}</div>
                         </td>
                         <td class="px-4 py-2">
                             <div class="h-2 w-32 overflow-hidden rounded-full bg-slate-800">
-                                <div class="h-full bg-emerald-400/70" style="width: {{ $pct }}%"></div>
+                                <div class="h-full {{ $batch->failed_jobs > 0 ? 'bg-rose-400/70' : 'bg-emerald-400/70' }}" style="width: {{ $pct }}%"></div>
                             </div>
                             <div class="mt-0.5 text-xs text-slate-400">{{ $done }} / {{ $batch->total_jobs }}</div>
                         </td>
                         <td class="px-4 py-2 text-right text-slate-200">{{ number_format($batch->total_jobs) }}</td>
                         <td class="px-4 py-2 text-right text-slate-300">{{ number_format($batch->pending_jobs) }}</td>
-                        <td class="px-4 py-2 text-right text-rose-300">{{ number_format($batch->failed_jobs) }}</td>
+                        <td class="px-4 py-2 text-right {{ $batch->failed_jobs > 0 ? 'text-rose-300' : 'text-slate-500' }}">{{ number_format($batch->failed_jobs) }}</td>
                         <td class="px-4 py-2">@include('periscope::partials.status-badge', ['status' => $status])</td>
                         <td class="px-4 py-2 text-slate-400">{{ \Illuminate\Support\Carbon::createFromTimestamp($batch->created_at)->diffForHumans() }}</td>
-                        <td class="px-4 py-2 text-right">
-                            @if (! $batch->finished_at && ! $batch->cancelled_at)
+                        <td class="space-x-1 px-4 py-2 text-right">
+                            @if ($running)
                                 <button wire:click="cancel('{{ $batch->id }}')" wire:confirm="Cancel this batch?"
-                                    class="rounded-md bg-rose-500/20 px-2 py-1 text-xs font-medium text-rose-300 hover:bg-rose-500/30">
-                                    Cancel
-                                </button>
+                                    class="rounded-md bg-rose-500/20 px-2 py-1 text-xs font-medium text-rose-300 hover:bg-rose-500/30">Cancel</button>
+                            @endif
+                            @if ($batch->failed_jobs > 0)
+                                <button wire:click="retryFailed('{{ $batch->id }}')"
+                                    class="rounded-md bg-sky-500/20 px-2 py-1 text-xs font-medium text-sky-300 hover:bg-sky-500/30">Retry failed</button>
+                            @endif
+                            @if (! $running)
+                                <button wire:click="delete('{{ $batch->id }}')" wire:confirm="Remove this batch record?"
+                                    class="rounded-md bg-slate-700/60 px-2 py-1 text-xs font-medium text-slate-200 hover:bg-slate-700">Delete</button>
                             @endif
                         </td>
                     </tr>

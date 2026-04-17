@@ -103,6 +103,11 @@ class DashboardController extends Controller
         return view('periscope::batches');
     }
 
+    public function batch(string $id)
+    {
+        return view('periscope::batch', ['id' => $id]);
+    }
+
     public function performance()
     {
         return view('periscope::performance');

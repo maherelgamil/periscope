@@ -21,6 +21,7 @@ use MaherElGamil\Periscope\Console\TerminateCommand;
 use MaherElGamil\Periscope\Listeners\RecordJobLifecycle;
 use MaherElGamil\Periscope\Listeners\RecordScheduleLifecycle;
 use MaherElGamil\Periscope\Livewire\AlertsTable;
+use MaherElGamil\Periscope\Livewire\BatchDetail;
 use MaherElGamil\Periscope\Livewire\BatchesTable;
 use MaherElGamil\Periscope\Livewire\ExceptionDetail;
 use MaherElGamil\Periscope\Livewire\ExceptionsTable;
@@ -110,6 +111,7 @@ class PeriscopeServiceProvider extends ServiceProvider
         Livewire::component('periscope.alerts-table', AlertsTable::class);
         Livewire::component('periscope.schedules-table', SchedulesTable::class);
         Livewire::component('periscope.batches-table', BatchesTable::class);
+        Livewire::component('periscope.batch-detail', BatchDetail::class);
         Livewire::component('periscope.performance-table', PerformanceTable::class);
     }
 

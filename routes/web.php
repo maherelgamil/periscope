@@ -15,6 +15,7 @@ Route::get('/exceptions/show', [DashboardController::class, 'exception'])->name(
 Route::get('/alerts', [DashboardController::class, 'alerts'])->name('periscope.alerts');
 Route::get('/schedules', [DashboardController::class, 'schedules'])->name('periscope.schedules');
 Route::get('/batches', [DashboardController::class, 'batches'])->name('periscope.batches');
+Route::get('/batches/{id}', [DashboardController::class, 'batch'])->name('periscope.batches.show');
 Route::get('/performance', [DashboardController::class, 'performance'])->name('periscope.performance');
 
 if (config('periscope.metrics.enabled', true)) {
