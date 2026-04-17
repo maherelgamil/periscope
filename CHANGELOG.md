@@ -4,6 +4,29 @@ All notable changes to `periscope` will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-04-17
+
+### Added
+- **Exception drill-down** — click any grouped exception to see every occurrence with pagination, sample stack trace, and time-window selector
+- **Alert history page** — every fired alert persisted to `periscope_alerts` with severity, channels, and context; dismissible from the UI
+- **Scheduled command monitoring** — `RecordScheduleLifecycle` listener subscribes to `ScheduledTaskStarting/Finished/Failed/Skipped` events; new Schedules page shows runtime, status, and cron expression
+- **Batch tracking** — reads Laravel's `job_batches` table; new Batches page with progress bar, pending/failed counts, and cancel action
+- **Performance percentiles page** — p50/p95/p99 of runtime and wait per queue, computed in-PHP for driver portability
+- **Memory tracking** — `memory_peak_bytes` captured on every attempt and displayed on the job detail page
+- **Retry / re-dispatch button** on the job detail page (failed jobs use `queue:retry`; others re-push the stored payload)
+- **Webhook alert notifier** alongside mail and Slack, with documented payload shape
+- **Visibility-aware polling** — all `wire:poll` directives now use `.visible` modifier to pause when the tab is hidden
+
+### Changed
+- `MonitoredJob::attempts()` relation renamed to `history()` to avoid collision with the `attempts` integer column
+- `RedisAdapter::queues()` replaced `KEYS` with non-blocking `SCAN`
+- `forget` action in the failed-jobs table now also removes Laravel's native `failed_jobs` row
+- Failed jobs page gained pagination, search across name/uuid/exception, queue filter, and checkbox-driven bulk retry/forget
+- Supervisors gained `balance: 'auto'` mode — processes allocated per queue proportional to live depth, clamped to `min_processes` / `max_processes`
+
+### Fixed
+- Job detail "Attempts" tile rendered the relation JSON instead of the integer column
+
 ## [0.2.0] — 2026-04-17
 
 ### Added

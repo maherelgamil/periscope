@@ -22,6 +22,9 @@ Periscope is a universal queue monitor for Laravel — a driver-agnostic alterna
 - [Metrics endpoint](#metrics-endpoint-prometheus--json)
 - [Alerts](#alerts)
 - [Tags](#tags)
+- [Batches](#batches)
+- [Scheduled commands](#scheduled-commands)
+- [Performance percentiles](#performance-percentiles)
 - [Commands](#commands)
 - [Screenshots](#screenshots)
 - [Testing](#testing)
@@ -33,7 +36,12 @@ Periscope is a universal queue monitor for Laravel — a driver-agnostic alterna
 - **Universal** — works with `redis`, `database`, `sqs`, `beanstalkd`, and `sync` queue drivers
 - **Real-time dashboard** built on Livewire 4 + Tailwind 4 — no CDN, ships with a compiled CSS bundle
 - **Per-attempt tracking** — every retry recorded with its runtime and exception, shown as a timeline on the job detail page
-- **Grouped exceptions** — aggregate by class + message so you see "this `RuntimeException` hit 47 times" instead of 47 rows
+- **Grouped exceptions** — aggregate by class + message so you see "this `RuntimeException` hit 47 times" instead of 47 rows, with drill-down to individual occurrences
+- **Batch tracking** — live progress for `Bus::batch()` jobs with cancel action
+- **Scheduled command monitoring** — every `Schedule::command()` run recorded with runtime and failure reason
+- **Performance percentiles** — p50 / p95 / p99 of runtime and wait, per queue
+- **Memory tracking** — peak memory captured per attempt
+- **Alert history** — every fired rule persisted, searchable, and dismissible
 - **Live queue depth** via driver adapters — pending, delayed, and reserved counts on the Queues page
 - **Throughput chart** — last 60 minutes of processed vs failed jobs, polled every 10s
 - **Worker pools** — config-driven supervisors with optional auto-balance that moves processes between queues based on backlog depth
@@ -257,6 +265,34 @@ class SendInvoice implements ShouldQueue
 ```
 
 Tags show on the job detail page and can be filtered on the Jobs page via the Tag input.
+
+## Batches
+
+Periscope reads Laravel's native `job_batches` table, so there's no extra setup beyond running Laravel's own `php artisan make:queue-batches-table` + migration. The Batches page shows:
+
+- live progress bar (completed / total)
+- pending and failed counts
+- cancel button for in-flight batches
+
+Any job that uses the `Batchable` trait and is dispatched via `Bus::batch([...])` appears automatically.
+
+## Scheduled commands
+
+Periscope subscribes to Laravel's scheduler events (`ScheduledTaskStarting`, `Finished`, `Failed`, `Skipped`) so every run of `Schedule::command(...)` is recorded with its runtime, exit status, and cron expression. The Schedules page shows the last N runs with failure messages for diagnosing cron issues.
+
+No configuration needed — if your app uses the Laravel scheduler, it just works.
+
+## Performance percentiles
+
+The Performance page computes `p50 / p95 / p99` of both runtime and wait time for every queue that had completed jobs in the selected window (1 hour, 6 hours, 24 hours, or 7 days). Percentiles are calculated in PHP from a sorted sample so they work against every supported queue driver without needing database-specific percentile functions.
+
+## Exception grouping
+
+The Exceptions page aggregates failures by `exception_class + message`. Click any row to drill into the `/exceptions/show` page, which lists every occurrence in the window, the affected jobs, and a sample stack trace you can click through.
+
+## Alert history
+
+Every fired alert is persisted to the `periscope_alerts` table so you can audit what rules triggered, when, and which channels received them. The Alerts page lists all firings and lets you dismiss rows you've triaged.
 
 ## Commands
 
