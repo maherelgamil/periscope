@@ -22,7 +22,7 @@
         @foreach ([
             'Connection' => $job->connection,
             'Queue' => $job->queue,
-            'Attempts' => $job->history,
+            'Attempts' => $job->attempts,
             'Runtime' => $job->runtime_ms !== null ? number_format($job->runtime_ms).' ms' : '—',
             'Wait' => $job->wait_ms !== null ? number_format($job->wait_ms).' ms' : '—',
             'Memory peak' => $job->memory_peak_bytes !== null ? number_format($job->memory_peak_bytes / 1024 / 1024, 2).' MB' : '—',

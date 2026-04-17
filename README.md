@@ -280,16 +280,31 @@ Run any command with `--help` for full flag reference.
 <details>
 <summary>Click to expand</summary>
 
-### Jobs
-![Jobs list with status, queue, and tag filters](docs/screenshots/jobs.png)
+### Job detail — attempts timeline, memory, tags, payload
+![Job detail with attempts history](docs/screenshots/job-detail.png)
+
+### Jobs — filter by status, queue, tag, or search
+![Jobs list with status, queue, and tag filters](docs/screenshots/jobs.jpg)
 
 ### Exceptions — grouped by class + message
-![Exception grouping showing occurrences and affected jobs](docs/screenshots/exceptions.png)
+![Exception grouping showing occurrences and affected jobs](docs/screenshots/exceptions.jpg)
 
 ### Failed jobs — search, bulk retry / forget
-![Failed jobs page with bulk actions](docs/screenshots/failed.png)
+![Failed jobs page with bulk actions](docs/screenshots/failed.jpg)
 
-### Workers
+### Alerts — history of every fired rule
+![Alert history with severity and channels](docs/screenshots/alerts.png)
+
+### Schedules — every scheduled command run
+![Scheduled command runs](docs/screenshots/schedules.png)
+
+### Batches — Laravel batches with live progress
+![Batch progress bars and cancel actions](docs/screenshots/batches.png)
+
+### Performance — p50 / p95 / p99 per queue
+![Performance percentiles table](docs/screenshots/performance.png)
+
+### Workers — live heartbeats
 ![Worker heartbeats with host, pid, queues, and status](docs/screenshots/workers.png)
 
 ### Queues — live driver sizes
