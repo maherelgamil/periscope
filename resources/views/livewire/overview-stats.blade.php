@@ -1,58 +1,73 @@
-<div wire:poll.visible.5s class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
+<div wire:poll.visible.5s class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl shadow-black/20">
+
     {{-- Row 1 --}}
-    <div class="grid grid-cols-2 divide-x divide-slate-800 md:grid-cols-4">
-        <div class="px-6 py-5">
-            <div class="text-sm text-slate-400">Jobs Per Minute</div>
-            <div class="mt-1 text-3xl font-semibold text-white">{{ number_format($this->jobsPerMinute) }}</div>
+    <div class="grid grid-cols-2 divide-x divide-slate-800/80 md:grid-cols-4">
+
+        <div class="group px-7 py-7">
+            <div class="text-xs font-medium uppercase tracking-widest text-slate-500">Jobs Per Minute</div>
+            <div class="mt-3 text-4xl font-bold tabular-nums text-white">{{ number_format($this->jobsPerMinute) }}</div>
         </div>
-        <div class="px-6 py-5">
-            <div class="text-sm text-slate-400">Jobs Past Hour</div>
-            <div class="mt-1 text-3xl font-semibold text-white">{{ number_format($this->jobsPastHour) }}</div>
+
+        <div class="group px-7 py-7">
+            <div class="text-xs font-medium uppercase tracking-widest text-slate-500">Jobs Past Hour</div>
+            <div class="mt-3 text-4xl font-bold tabular-nums text-white">{{ number_format($this->jobsPastHour) }}</div>
         </div>
-        <div class="px-6 py-5">
-            <div class="text-sm text-slate-400">Failed Jobs Past 7 Days</div>
-            <div class="mt-1 text-3xl font-semibold text-white">{{ number_format($this->failedPast7Days) }}</div>
+
+        @php($failed7 = $this->failedPast7Days)
+        <div class="group px-7 py-7">
+            <div class="text-xs font-medium uppercase tracking-widest text-slate-500">Failed Past 7 Days</div>
+            <div @class([
+                'mt-3 text-4xl font-bold tabular-nums',
+                'text-rose-400' => $failed7 > 0,
+                'text-white' => $failed7 === 0,
+            ])>{{ number_format($failed7) }}</div>
         </div>
-        <div class="px-6 py-5">
-            <div class="text-sm text-slate-400">Status</div>
-            @php($active = $this->isActive)
-            <div class="mt-1 flex items-center gap-2">
+
+        @php($active = $this->isActive)
+        <div class="group px-7 py-7">
+            <div class="text-xs font-medium uppercase tracking-widest text-slate-500">Status</div>
+            <div class="mt-3 flex items-center gap-3">
                 @if ($active)
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="shrink-0 text-emerald-400">
-                        <circle cx="12" cy="12" r="10" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 12l3 3 5-5" />
-                    </svg>
-                    <span class="text-3xl font-semibold text-emerald-400">Active</span>
+                    <span class="relative flex h-3 w-3 shrink-0">
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span>
+                        <span class="relative inline-flex h-3 w-3 rounded-full bg-emerald-400"></span>
+                    </span>
+                    <span class="text-4xl font-bold text-emerald-400">Active</span>
                 @else
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="shrink-0 text-slate-500">
-                        <circle cx="12" cy="12" r="10" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 9l-6 6M9 9l6 6" />
-                    </svg>
-                    <span class="text-3xl font-semibold text-slate-400">Inactive</span>
+                    <span class="relative flex h-3 w-3 shrink-0">
+                        <span class="relative inline-flex h-3 w-3 rounded-full bg-slate-600"></span>
+                    </span>
+                    <span class="text-4xl font-bold text-slate-500">Inactive</span>
                 @endif
             </div>
         </div>
+
     </div>
 
-    <div class="border-t border-slate-800"></div>
+    <div class="border-t border-slate-800/80"></div>
 
     {{-- Row 2 --}}
-    <div class="grid grid-cols-2 divide-x divide-slate-800 md:grid-cols-4">
-        <div class="px-6 py-5">
-            <div class="text-sm text-slate-400">Total Processes</div>
-            <div class="mt-1 text-3xl font-semibold text-white">{{ number_format($this->totalProcesses) }}</div>
+    <div class="grid grid-cols-2 divide-x divide-slate-800/80 md:grid-cols-4">
+
+        <div class="px-7 py-6">
+            <div class="text-xs font-medium uppercase tracking-widest text-slate-500">Total Processes</div>
+            <div class="mt-2 text-2xl font-semibold tabular-nums text-slate-200">{{ number_format($this->totalProcesses) }}</div>
         </div>
-        <div class="px-6 py-5">
-            <div class="text-sm text-slate-400">Max Wait Time</div>
-            <div class="mt-1 text-3xl font-semibold text-white">{{ $this->maxWaitQueue ?? '-' }}</div>
+
+        <div class="px-7 py-6">
+            <div class="text-xs font-medium uppercase tracking-widest text-slate-500">Max Wait Time</div>
+            <div class="mt-2 text-2xl font-semibold text-slate-200">{{ $this->maxWaitQueue ?? '—' }}</div>
         </div>
-        <div class="px-6 py-5">
-            <div class="text-sm text-slate-400">Max Runtime</div>
-            <div class="mt-1 text-3xl font-semibold text-white">{{ $this->maxRuntimeQueue ?? '-' }}</div>
+
+        <div class="px-7 py-6">
+            <div class="text-xs font-medium uppercase tracking-widest text-slate-500">Max Runtime</div>
+            <div class="mt-2 text-2xl font-semibold text-slate-200">{{ $this->maxRuntimeQueue ?? '—' }}</div>
         </div>
-        <div class="px-6 py-5">
-            <div class="text-sm text-slate-400">Max Throughput</div>
-            <div class="mt-1 text-3xl font-semibold text-white">{{ $this->maxThroughputQueue ?? '-' }}</div>
+
+        <div class="px-7 py-6">
+            <div class="text-xs font-medium uppercase tracking-widest text-slate-500">Max Throughput</div>
+            <div class="mt-2 text-2xl font-semibold text-slate-200">{{ $this->maxThroughputQueue ?? '—' }}</div>
         </div>
+
     </div>
 </div>
