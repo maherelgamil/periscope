@@ -3,9 +3,11 @@
 namespace MaherElGamil\Periscope\Console;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use MaherElGamil\Periscope\Supervisors\Master;
 use MaherElGamil\Periscope\Supervisors\Supervisor;
 use MaherElGamil\Periscope\Support\QueueSize;
+use Throwable;
 
 class StartCommand extends Command
 {
@@ -28,6 +30,9 @@ class StartCommand extends Command
 
             return self::SUCCESS;
         }
+
+        // Clean up stale worker records from previous runs
+        $this->call('periscope:workers:sweep');
 
         $master = new Master(base_path());
         $booted = [];
@@ -61,22 +66,34 @@ class StartCommand extends Command
 
         $previousPaused = false;
 
-        $master->run(function (array $status, bool $paused) use (&$previousPaused) {
-            if ($paused && ! $previousPaused) {
-                $this->components->warn('Periscope paused — run `periscope:continue` to resume.');
-            } elseif (! $paused && $previousPaused) {
-                $this->components->info('Periscope resumed.');
-            }
-
-            $previousPaused = $paused;
-
-            if ($this->output->isVerbose()) {
-                foreach ($status as $name => $workers) {
-                    $running = count(array_filter($workers, fn ($w) => $w['running']));
-                    $this->components->twoColumnDetail($name, "{$running}/".count($workers).' running');
+        try {
+            $master->run(function (array $status, bool $paused) use (&$previousPaused) {
+                if ($paused && ! $previousPaused) {
+                    $this->components->warn('Periscope paused — run `periscope:continue` to resume.');
+                } elseif (! $paused && $previousPaused) {
+                    $this->components->info('Periscope resumed.');
                 }
-            }
-        });
+
+                $previousPaused = $paused;
+
+                if ($this->output->isVerbose()) {
+                    foreach ($status as $name => $workers) {
+                        $running = count(array_filter($workers, fn ($w) => $w['running']));
+                        $this->components->twoColumnDetail($name, "{$running}/".count($workers).' running');
+                    }
+                }
+            });
+        } catch (Throwable $e) {
+            Log::error('Periscope master crashed', [
+                'exception' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            $this->components->error('Periscope master crashed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
 
         $this->components->info('Periscope stopped.');
 
