@@ -16,6 +16,7 @@ use MaherElGamil\Periscope\Console\InstallCommand;
 use MaherElGamil\Periscope\Console\MarkStaleWorkersCommand;
 use MaherElGamil\Periscope\Console\PauseCommand;
 use MaherElGamil\Periscope\Console\PruneCommand;
+use MaherElGamil\Periscope\Console\ServiceInstallCommand;
 use MaherElGamil\Periscope\Console\SnapshotCommand;
 use MaherElGamil\Periscope\Console\StartCommand;
 use MaherElGamil\Periscope\Console\StatusCommand;
@@ -164,6 +165,7 @@ class PeriscopeServiceProvider extends ServiceProvider
 
         $this->commands([
             InstallCommand::class,
+            ServiceInstallCommand::class,
             PruneCommand::class,
             SuperviseCommand::class,
             MarkStaleWorkersCommand::class,
