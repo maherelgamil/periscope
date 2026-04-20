@@ -26,7 +26,6 @@
                         'periscope.schedules' => 'Schedules',
                         'periscope.batches' => 'Batches',
                         'periscope.performance' => 'Performance',
-                        'periscope.workers' => 'Workers',
                     ] as $route => $label)
                         <a href="{{ route($route) }}"
                            class="rounded-md px-3 py-1.5 transition
