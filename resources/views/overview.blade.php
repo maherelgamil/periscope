@@ -6,7 +6,7 @@
     <div class="mt-6">
         <livewire:periscope.throughput-chart />
     </div>
-    <div class="mt-8">
+    <div class="mt-16">
         <h2 class="mb-4 text-lg font-semibold text-slate-200">Workers</h2>
         <livewire:periscope.workers-table />
     </div>
