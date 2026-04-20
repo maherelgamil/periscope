@@ -9,8 +9,13 @@ class WorkersTable extends Component
 {
     public function render()
     {
+        $groups = Worker::query()
+            ->orderByDesc('last_heartbeat_at')
+            ->get()
+            ->groupBy('hostname');
+
         return view('periscope::livewire.workers-table', [
-            'workers' => Worker::query()->orderByDesc('last_heartbeat_at')->get(),
+            'groups' => $groups,
         ]);
     }
 }
