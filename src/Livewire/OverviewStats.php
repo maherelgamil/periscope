@@ -10,24 +10,28 @@ use MaherElGamil\Periscope\Models\Worker;
 class OverviewStats extends Component
 {
     #[Computed]
-    public function totals(): array
+    public function jobsPerMinute(): int
     {
-        $since = now()->subHour();
+        return MonitoredJob::query()
+            ->where('queued_at', '>=', now()->subMinute())
+            ->count();
+    }
 
-        return [
-            'running' => MonitoredJob::query()->where('status', MonitoredJob::STATUS_RUNNING)->count(),
-            'queued' => MonitoredJob::query()->where('status', MonitoredJob::STATUS_QUEUED)->count(),
-            'completed_last_hour' => MonitoredJob::query()
-                ->where('status', MonitoredJob::STATUS_COMPLETED)
-                ->where('finished_at', '>=', $since)
-                ->count(),
-            'failed_last_hour' => MonitoredJob::query()
-                ->where('status', MonitoredJob::STATUS_FAILED)
-                ->where('finished_at', '>=', $since)
-                ->count(),
-            'workers_running' => Worker::query()->where('status', Worker::STATUS_RUNNING)->count(),
-            'workers_stale' => Worker::query()->where('status', Worker::STATUS_STALE)->count(),
-        ];
+    #[Computed]
+    public function jobsPastHour(): int
+    {
+        return MonitoredJob::query()
+            ->where('queued_at', '>=', now()->subHour())
+            ->count();
+    }
+
+    #[Computed]
+    public function failedPast7Days(): int
+    {
+        return MonitoredJob::query()
+            ->where('status', MonitoredJob::STATUS_FAILED)
+            ->where('finished_at', '>=', now()->subDays(7))
+            ->count();
     }
 
     #[Computed]
@@ -37,21 +41,42 @@ class OverviewStats extends Component
     }
 
     #[Computed]
-    public function avgRuntimeMs(): int
+    public function totalProcesses(): int
     {
-        return (int) MonitoredJob::query()
-            ->where('status', MonitoredJob::STATUS_COMPLETED)
-            ->where('finished_at', '>=', now()->subHour())
-            ->avg('runtime_ms');
+        return Worker::query()->where('status', Worker::STATUS_RUNNING)->count();
     }
 
     #[Computed]
-    public function avgWaitMs(): int
+    public function maxWaitQueue(): ?string
     {
-        return (int) MonitoredJob::query()
+        return MonitoredJob::query()
             ->whereNotNull('wait_ms')
             ->where('started_at', '>=', now()->subHour())
-            ->avg('wait_ms');
+            ->orderByDesc('wait_ms')
+            ->value('queue');
+    }
+
+    #[Computed]
+    public function maxRuntimeQueue(): ?string
+    {
+        return MonitoredJob::query()
+            ->where('status', MonitoredJob::STATUS_COMPLETED)
+            ->whereNotNull('runtime_ms')
+            ->where('finished_at', '>=', now()->subHour())
+            ->orderByDesc('runtime_ms')
+            ->value('queue');
+    }
+
+    #[Computed]
+    public function maxThroughputQueue(): ?string
+    {
+        return MonitoredJob::query()
+            ->where('status', MonitoredJob::STATUS_COMPLETED)
+            ->where('finished_at', '>=', now()->subHour())
+            ->selectRaw('queue, count(*) as total')
+            ->groupBy('queue')
+            ->orderByDesc('total')
+            ->value('queue');
     }
 
     public function render()
