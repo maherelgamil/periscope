@@ -13,6 +13,7 @@ use MaherElGamil\Periscope\Console\ContinueCommand;
 use MaherElGamil\Periscope\Console\DeployCommand;
 use MaherElGamil\Periscope\Console\ForgetCommand;
 use MaherElGamil\Periscope\Console\InstallCommand;
+use MaherElGamil\Periscope\Console\ServiceInstallCommand;
 use MaherElGamil\Periscope\Console\MarkStaleWorkersCommand;
 use MaherElGamil\Periscope\Console\PauseCommand;
 use MaherElGamil\Periscope\Console\PruneCommand;
