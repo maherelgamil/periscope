@@ -1,4 +1,20 @@
 <div wire:poll.visible.5s class="space-y-6">
+    <div class="flex flex-wrap items-center gap-3">
+        @php($active = $this->isActive)
+        <div @class([
+            'inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold',
+            'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30' => $active,
+            'bg-slate-800/60 text-slate-400 ring-1 ring-slate-700' => ! $active,
+        ])>
+            <span @class([
+                'inline-block h-2 w-2 rounded-full',
+                'animate-pulse bg-emerald-400' => $active,
+                'bg-slate-500' => ! $active,
+            ])></span>
+            {{ $active ? 'Active' : 'Inactive' }}
+        </div>
+    </div>
+
     <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
         @php($totals = $this->totals)
         @foreach ([

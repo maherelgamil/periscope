@@ -31,6 +31,12 @@ class OverviewStats extends Component
     }
 
     #[Computed]
+    public function isActive(): bool
+    {
+        return Worker::query()->where('status', Worker::STATUS_RUNNING)->exists();
+    }
+
+    #[Computed]
     public function avgRuntimeMs(): int
     {
         return (int) MonitoredJob::query()
