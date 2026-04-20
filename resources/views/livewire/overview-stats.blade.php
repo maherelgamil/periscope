@@ -16,23 +16,20 @@
         <div class="px-6 py-5">
             <div class="text-sm text-slate-400">Status</div>
             @php($active = $this->isActive)
-            <div @class([
-                'mt-1 flex items-center gap-2 text-3xl font-semibold',
-                'text-emerald-400' => $active,
-                'text-slate-400' => ! $active,
-            ])>
+            <div class="mt-1 flex items-center gap-2">
                 @if ($active)
-                    <svg class="h-7 w-7 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="shrink-0 text-emerald-400">
                         <circle cx="12" cy="12" r="10" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 12l3 3 5-5" />
                     </svg>
+                    <span class="text-3xl font-semibold text-emerald-400">Active</span>
                 @else
-                    <svg class="h-7 w-7 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="shrink-0 text-slate-500">
                         <circle cx="12" cy="12" r="10" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 9l-6 6M9 9l6 6" />
                     </svg>
+                    <span class="text-3xl font-semibold text-slate-400">Inactive</span>
                 @endif
-                {{ $active ? 'Active' : 'Inactive' }}
             </div>
         </div>
     </div>
