@@ -54,14 +54,14 @@ it('renders the failed page', function () {
         ->assertSeeText('Failed jobs');
 });
 
-it('renders the workers page', function () {
+it('renders workers on the overview page', function () {
     Worker::query()->create([
         'name' => 'test-worker', 'status' => 'running', 'last_heartbeat_at' => now(),
     ]);
 
-    $this->get('/periscope/workers')
+    $this->get('/periscope')
         ->assertOk()
-        ->assertSeeText('test-worker');
+        ->assertSeeText('Workers');
 });
 
 it('renders the exceptions page', function () {
