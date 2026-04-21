@@ -14,7 +14,9 @@
         </thead>
         <tbody class="divide-y divide-slate-800/50">
             @forelse ($groups as $hostname => $workers)
-                @php($hasRunning = $workers->contains('status', \MaherElGamil\Periscope\Models\Worker::STATUS_RUNNING))
+                @php
+                    $hasRunning = $workers->contains('status', \MaherElGamil\Periscope\Models\Worker::STATUS_RUNNING);
+                @endphp
                 <tr class="bg-slate-900/80">
                     <td colspan="5" class="px-4 py-2">
                         <div class="flex items-center gap-2">
@@ -38,7 +40,11 @@
                 @foreach ($workers as $worker)
                     <tr class="hover:bg-slate-800/30">
                         <td class="px-4 py-3 pl-12">
-                            <div class="font-medium text-slate-100">{{ \Illuminate\Support\Str::after($worker->name, $hostname.'-') ?: $worker->name }}</div>
+                            @php
+                                $segments = explode('-', \Illuminate\Support\Str::after($worker->name, $hostname.'-') ?: $worker->name);
+                                $displayName = implode('-', array_filter($segments, fn($s, $i) => $i === 0 || $segments[$i - 1] !== $s, ARRAY_FILTER_USE_BOTH));
+                            @endphp
+                            <div class="font-medium text-slate-100">{{ $displayName }}</div>
                             <div class="font-mono text-xs text-slate-500">pid {{ $worker->pid ?? '—' }}</div>
                         </td>
                         <td class="px-4 py-3 text-slate-300">{{ $worker->connection ?? '—' }}</td>
