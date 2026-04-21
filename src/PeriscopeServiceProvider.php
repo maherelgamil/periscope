@@ -37,6 +37,7 @@ use MaherElGamil\Periscope\Livewire\QueuesTable;
 use MaherElGamil\Periscope\Livewire\SchedulesTable;
 use MaherElGamil\Periscope\Livewire\ThroughputChart;
 use MaherElGamil\Periscope\Livewire\WorkersTable;
+use MaherElGamil\Periscope\Livewire\WorkloadTable;
 use MaherElGamil\Periscope\Support\AdapterFactory;
 use MaherElGamil\Periscope\Support\MetricsCollector;
 use MaherElGamil\Periscope\Support\PrometheusFormatter;
@@ -117,6 +118,7 @@ class PeriscopeServiceProvider extends ServiceProvider
         Livewire::component('periscope.batches-table', BatchesTable::class);
         Livewire::component('periscope.batch-detail', BatchDetail::class);
         Livewire::component('periscope.performance-table', PerformanceTable::class);
+        Livewire::component('periscope.workload-table', WorkloadTable::class);
     }
 
     protected function registerListeners(): void
