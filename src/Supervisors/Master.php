@@ -53,14 +53,7 @@ class Master
 
                 $reporter($this->status(), $paused);
 
-                for ($i = 0; $i < 20 && ! $this->shouldStop; $i++) {
-                    usleep(100_000);
-                    $this->dispatchPendingSignals();
-
-                    foreach ($this->supervisors as $supervisor) {
-                        $supervisor->drainOutput();
-                    }
-                }
+                $this->sleepWithSignalCheck(2);
             }
 
             foreach ($this->supervisors as $supervisor) {
@@ -92,19 +85,33 @@ class Master
 
     protected function registerSignals(): void
     {
-        if (! function_exists('pcntl_signal')) {
-            return;
-        }
-
-        pcntl_async_signals(true);
-        pcntl_signal(SIGTERM, fn () => $this->stop());
-        pcntl_signal(SIGINT, fn () => $this->stop());
+        // Signals are handled via pcntl_sigtimedwait() in sleepWithSignalCheck()
+        // No need for async signals or signal handlers
     }
 
-    protected function dispatchPendingSignals(): void
+    protected function sleepWithSignalCheck(int $seconds): void
     {
-        if (function_exists('pcntl_signal_dispatch')) {
-            pcntl_signal_dispatch();
+        $start = time();
+
+        while (time() - $start < $seconds && ! $this->shouldStop) {
+            if (function_exists('pcntl_sigtimedwait') && function_exists('pcntl_sigprocmask')) {
+                $signals = [SIGINT, SIGTERM];
+                pcntl_sigprocmask(SIG_BLOCK, $signals);
+                $info = [];
+                $result = pcntl_sigtimedwait($signals, $info, 100_000);
+                pcntl_sigprocmask(SIG_UNBLOCK, $signals);
+
+                if ($result !== false && $result > 0) {
+                    $this->stop();
+                    break;
+                }
+            } else {
+                usleep(100_000);
+            }
+
+            foreach ($this->supervisors as $supervisor) {
+                $supervisor->drainOutput();
+            }
         }
     }
 }
